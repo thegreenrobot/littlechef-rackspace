@@ -13,5 +13,4 @@ node = create_node(conn, name=options.nodename,
                    image=options.image, flavor=options.flavor,
                    public_key=file(options.public_key).read())
 node = deploy_chef(conn, node)
-# TODO: add roles specified by the options
-save_node(options.private_key, node)
+save_node(options, node)

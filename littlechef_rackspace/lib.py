@@ -6,7 +6,8 @@ from libcloud.compute.types import Provider, NodeState
 import time
 from options import parser
 from littlechef import runner as lc
-
+from littlechef import lib as lc_lib
+from littlechef import chef as lc_chef
 
 def raise_error(text):
     print("Error: %s" % text)
@@ -72,13 +73,20 @@ def deploy_chef(conn, node):
     lc.env.user = "root"
     lc.env.password = password
     lc.env.host_string = ipv4_address
+    lc.env.host = ipv4_address
     lc.deploy_chef(ask="no")
 
     return node
 
-def save_node(private_key, node):
+def save_node(options, node):
     lc.env.user = "root"
-    lc.env.key_filename = private_key
-    # TODO: This prompts for a password
-    lc.node(_get_ipv4_address(node))
+    lc.env.key_filename = options.private_key
+
+    roles = options.roles.split(',')
+    if roles:
+        for role in roles:
+            lc.role(role)
+    else:
+        lc.node(_get_ipv4_address(node))
+
     # TODO: rename file and yell about setting up DNS I guess

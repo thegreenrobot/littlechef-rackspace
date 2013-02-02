@@ -17,3 +17,5 @@ parser.add_option("-a", "--public-key", dest="public_key",
                   help="Public Key File for Bootstrapping")
 parser.add_option("-i", "--private-key", dest="private_key",
                   help="Private Key File for Bootstrapping")
+parser.add_option("-r", "--roles", dest="roles",
+                  help="Comma separated list of roles to apply")
