@@ -3,3 +3,8 @@
 *.pyc
 bootstrap
 bootstrap.pub
+nodes/
+roles/
+site-cookbooks/
+cookbooks/
+config.cfg
