@@ -11,8 +11,6 @@ parser.add_option("-N", "--node-name", dest="nodename",
                   help="Node name")
 parser.add_option("-K", "--key", dest="apikey",
                   help="Rackspace API Key")
-parser.add_option("-v", "--version", type="int", dest="version",
-                  default=2, help="API Version (defaults to OpenStack v2)")
 parser.add_option("-R", "--region", dest="region", default="",
                   help="Region for provisioning (required for OpenStack)")
 parser.add_option("-a", "--public-key", dest="public_key",

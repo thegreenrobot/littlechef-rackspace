@@ -16,15 +16,12 @@ def raise_error(text):
 def get_provider(options):
     region = options.region.lower()
 
-    if options.version == 1:
-        return Provider.RACKSPACE
-
     if region == "dfw":
         return Provider.RACKSPACE_NOVA_DFW
     if region == "ord":
         return Provider.RACKSPACE_NOVA_ORD
 
-    raise_error("must specify region for OpenStack servers.")
+    raise_error("must specify region (DFW or ORD)")
 
 def get_conn(options):
     RACKSPACE_USER = options.username or os.environ.get("RACKSPACE_USER")
