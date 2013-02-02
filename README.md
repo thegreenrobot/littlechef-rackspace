@@ -14,13 +14,14 @@ pip install libcloud
 
 * TODO: handle roles specified at the command line
 * TODO: rebuild a server
+* TODO: add this to littlechef config file
 
 ## Rackspace Create
 
 ```
 python littlechef_rackspace/rackspace-create.py \
-    -A <username> \
-    -K <api_key> \
+    --username <username> \
+    --key <api_key> \
     --region <region, must be DFW or ORD> \
     --image 5cebb13a-f783-4f8c-8058-c4182c724ccd \
     --flavor 2 \
