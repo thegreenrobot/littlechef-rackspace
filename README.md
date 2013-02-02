@@ -12,8 +12,8 @@ pip install littlechef
 pip install libcloud
 ```
 
-TODO: handle roles specified at the command line
-TODO: rebuild a server
+* TODO: handle roles specified at the command line
+* TODO: rebuild a server
 
 ## Rackspace Create
 
