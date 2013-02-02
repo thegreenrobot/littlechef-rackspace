@@ -5,6 +5,13 @@ Meant to replace `knife rackspace` when a Chef Server is not in use.
 
 Currently only supports creating a new server.
 
+Requires littlechef and libcloud:
+
+```
+pip install littlechef
+pip install libcloud
+```
+
 TODO: handle roles specified at the command line
 TODO: rebuild a server
 
