@@ -21,12 +21,12 @@ pip install libcloud
 python littlechef_rackspace/rackspace-create.py \
     -A <username> \
     -K <api_key> \
-    --region (DFW|ORD)
+    --region <region, must be DFW or ORD> \
     --image 5cebb13a-f783-4f8c-8058-c4182c724ccd \
     --flavor 2 \
-    --node-name "test-creation"
-    --public-key <public_key_file> (Used for bootstrapping)
-    --private-key <private_key_file> (Used for bootstrapping)
+    --node-name "test-creation" \
+    --public-key <public_key_file> \
+    --private-key <private_key_file>
 ```
 
 The server is created with your public key file in the `/root/.ssh/authorized_keys`.
