@@ -15,3 +15,7 @@ parser.add_option("-v", "--version", type="int", dest="version",
                   default=2, help="API Version (defaults to OpenStack v2)")
 parser.add_option("-R", "--region", dest="region", default="",
                   help="Region for provisioning (required for OpenStack)")
+parser.add_option("-a", "--public-key", dest="public_key",
+                  help="Public Key File for Bootstrapping")
+parser.add_option("-i", "--private-key", dest="private_key",
+                  help="Private Key File for Bootstrapping")

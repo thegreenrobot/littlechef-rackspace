@@ -41,13 +41,15 @@ def get_conn(options):
                   ex_force_auth_version="2.0")
 
 
-def create_node(conn, name, image, flavor):
+def create_node(conn, name, image, flavor, public_key):
     image = NodeImage(id=image, name=None, driver=conn)
     flavor = NodeSize(id=flavor, name=None, ram=None, disk=None, bandwidth=None, price=None, driver=conn)
 
     sys.stderr.write("Creating node %s (image: %s, flavor: %s)...\n" % (name, image.id, flavor.id))
 
-    return conn.create_node(name=name, image=image, size=flavor)
+    return conn.create_node(name=name, image=image, size=flavor, ex_files={
+        "/root/.ssh/authorized_keys": public_key
+    })
 
 def _get_ipv4_address(node):
     # Dumb hack to not ssh into the ipv6 address
@@ -55,8 +57,6 @@ def _get_ipv4_address(node):
 
 def deploy_chef(conn, node):
     password = node.extra['password']
-
-    lc.env.user = "root"
 
     sys.stderr.write("Created node %s (id: %s, password: %s)\n" % (node.name, node.id, password))
 
@@ -70,17 +70,18 @@ def deploy_chef(conn, node):
     sys.stderr.write("Node active!\n")
 
     ipv4_address = _get_ipv4_address(node)
-    lc.env.host_string = ipv4_address
-    sys.stderr.write("Deploying Chef on host %s...\n" % lc.env.host_string)
+    sys.stderr.write("Deploying Chef on host %s...\n" % ipv4_address)
 
+    lc.env.user = "root"
     lc.env.password = password
+    lc.env.host_string = ipv4_address
     lc.deploy_chef(ask="no")
-    lc.env.passwords = {
-        ('root@%s' % ipv4_address): password
-    }
+
     return node
 
-def save_node(node):
+def save_node(private_key, node):
+    lc.env.user = "root"
+    lc.env.key_filename = private_key
     # TODO: This prompts for a password
     lc.node(_get_ipv4_address(node))
     # TODO: rename file and yell about setting up DNS I guess
