@@ -7,9 +7,9 @@ from lib import Host
 
 class RackspaceApi(object):
 
-    def __init__(self, username, password, region):
+    def __init__(self, username, apikey, region):
         self.username = username
-        self.password = password
+        self.apikey = apikey
         self.region = region
 
     def _get_conn(self):
@@ -19,7 +19,7 @@ class RackspaceApi(object):
             provider = Provider.RACKSPACE_NOVA_ORD
 
         Driver = get_driver(provider)
-        return Driver(self.username, self.password,
+        return Driver(self.username, self.apikey,
                       ex_force_auth_url="https://identity.api.rackspacecloud.com/v2.0",
                       ex_force_auth_version="2.0")
 

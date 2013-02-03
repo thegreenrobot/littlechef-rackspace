@@ -2,7 +2,6 @@ import sys
 from lib import raise_error
 from api import RackspaceApi, Regions
 from deploy import ChefDeployer
-from options import parser
 
 (options, args) = parser.parse_args()
 
