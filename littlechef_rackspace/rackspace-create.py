@@ -1,4 +1,6 @@
-from lib import raise_error, create_node, deploy_chef, save_node, get_conn
+import sys
+from lib import raise_error, deploy_chef, save_node
+from api import RackspaceApi, Regions
 from options import parser
 
 (options, args) = parser.parse_args()
@@ -8,9 +10,16 @@ if not options.nodename:
 if not options.public_key:
     raise_error("must supply identity file")
 
-conn = get_conn(options)
-node = create_node(conn, name=options.nodename,
-                   image=options.image, flavor=options.flavor,
-                   public_key=file(options.public_key).read())
-node = deploy_chef(conn, node)
-save_node(options, node)
+if options.region.lower() == 'dfw':
+    region = Regions.DFW
+else:
+    region = Regions.ORD
+
+api = RackspaceApi(options.username, options.apikey, region)
+host = api.create_node(node_name=options.nodename,
+                       image_id=options.image,
+                       flavor_id=options.flavor,
+                       public_key_file=file(options.public_key),
+                       progress=sys.stderr)
+deploy_chef(options, host)
+save_node(options, host)

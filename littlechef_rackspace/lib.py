@@ -51,32 +51,18 @@ def _get_ipv4_address(node):
     # Dumb hack to not ssh into the ipv6 address
     return [ip for ip in node.public_ips if ":" not in ip][0]
 
-def deploy_chef(conn, node):
-    password = node.extra['password']
-
-    sys.stderr.write("Created node %s (id: %s, password: %s)\n" % (node.name, node.id, password))
-
-    sys.stderr.write("Waiting for node to become active")
-    while node.state != NodeState.RUNNING:
-        sys.stderr.write(".")
-        time.sleep(5)
-        node = conn.ex_get_node_details(node.id)
-
-    sys.stderr.write("\n")
-    sys.stderr.write("Node active!\n")
-
-    ipv4_address = _get_ipv4_address(node)
+def deploy_chef(options, host):
+    ipv4_address = host.host_string
     sys.stderr.write("Deploying Chef on host %s...\n" % ipv4_address)
 
     lc.env.user = "root"
-    lc.env.password = password
+    lc.env.key_filename = options.private_key
     lc.env.host_string = ipv4_address
     lc.env.host = ipv4_address
     lc.deploy_chef(ask="no")
 
-    return node
 
-def save_node(options, node):
+def save_node(options, host):
     lc.env.user = "root"
     lc.env.key_filename = options.private_key
 
@@ -87,7 +73,7 @@ def save_node(options, node):
         for role in roles:
             lc.role(role)
     else:
-        lc.node(_get_ipv4_address(node))
+        lc.node(host.host_string)
 
     # TODO: rename file and yell about setting up DNS I guess
 

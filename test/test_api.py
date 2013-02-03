@@ -25,7 +25,9 @@ class RackspaceApiTest(unittest.TestCase):
             api = self._get_api(Regions.DFW)
             api.list_images()
 
-            driver.assert_any_call(self.username, self.apikey)
+            driver.assert_any_call(self.username, self.apikey,
+                                   ex_force_auth_url="https://identity.api.rackspacecloud.com/v2.0",
+                                   ex_force_auth_version="2.0")
 
     def test_list_images_instantiates_dfw_driver(self):
         with mock.patch("littlechef_rackspace.api.get_driver") as get_driver:
@@ -77,7 +79,7 @@ class RackspaceApiTest(unittest.TestCase):
         api.create_node(node_name=node_name,
                         image_id=image_id,
                         flavor_id=flavor_id,
-                        public_key_io=public_key_io)
+                        public_key_file=public_key_io)
 
         call_kwargs = conn.create_node.call_args_list[0][1]
         self.assertEquals(node_name, call_kwargs['name'])
@@ -97,7 +99,7 @@ class RackspaceApiTest(unittest.TestCase):
             api.create_node(node_name="some name",
                             image_id="5cebb13a-f783-4f8c-8058-c4182c724ccd",
                             flavor_id="2",
-                            public_key_io=StringIO("some public key"))
+                            public_key_file=StringIO("some public key"))
             time.sleep.assert_any_call(5)
 
     def test_returns_host_information(self):
@@ -115,7 +117,7 @@ class RackspaceApiTest(unittest.TestCase):
         result = api.create_node(node_name="some name",
                                  image_id="5cebb13a-f783-4f8c-8058-c4182c724ccd",
                                  flavor_id="2",
-                                 public_key_io=StringIO("some public key"))
+                                 public_key_file=StringIO("some public key"))
 
         self.assertEquals(result, Host(name="some name",
                                        host_string=public_ipv4_address,
@@ -146,7 +148,7 @@ class RackspaceApiTest(unittest.TestCase):
             image_id = "dontcare"
             flavor_id = "2"
             host = api.create_node(node_name=node_name, image_id=image_id,
-                                   flavor_id=flavor_id, public_key_io=StringIO("some key"),
+                                   flavor_id=flavor_id, public_key_file=StringIO("some key"),
                                    progress=progress)
 
             self.assertEquals([
