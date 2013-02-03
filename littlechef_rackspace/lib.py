@@ -66,11 +66,11 @@ def save_node(options, host):
     lc.env.user = "root"
     lc.env.key_filename = options.private_key
 
-    roles = options.roles.split(',')
+    roles = options.roles
     if roles:
         # TODO use littlechef lib /chef modules directly to avoid
         # running chef multiple times here
-        for role in roles:
+        for role in roles.split(','):
             lc.role(role)
     else:
         lc.node(host.host_string)
