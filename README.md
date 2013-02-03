@@ -14,7 +14,6 @@ pip install libcloud
 
 * TODO: rebuild a server
 * TODO: add various command line args to littlechef config file
-* TODO: set runlist directly, e.g. recipe[X], role[Y]
 * TODO: set up install w/pip, validate that running scripts works in any littlechef kitchen
 
 ## Rackspace Create
