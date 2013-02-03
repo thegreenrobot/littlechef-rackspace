@@ -13,13 +13,14 @@ pip install libcloud
 ```
 
 * TODO: rebuild a server
-* TODO: add various command line args to littlechef config file
+* TODO: also look in littlechef config file for certain command line args
 * TODO: set up install w/pip, validate that running scripts works in any littlechef kitchen
 
 ## Rackspace Create
 
 ```
-python littlechef_rackspace/rackspace-create.py \
+python littlechef_rackspace/runner.py
+    create \
     --username <username> \
     --key <api_key> \
     --region <region, must be DFW or ORD> \
@@ -31,4 +32,5 @@ python littlechef_rackspace/rackspace-create.py \
 ```
 
 The server is created with your public key file in the `/root/.ssh/authorized_keys`.
-It is HIGHLY recommended that you disable root login as part of your chef recipes!
+It is HIGHLY recommended that you disable root password login as part of your chef
+recipes!
