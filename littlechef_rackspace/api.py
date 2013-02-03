@@ -29,6 +29,12 @@ class RackspaceApi(object):
         return [{ "id": image.id, "name": image.name}
                 for image in conn.list_images()]
 
+    def list_flavors(self):
+        conn = self._get_conn()
+
+        return [{ "id": size.id, "name": size.name}
+                for size in conn.list_sizes()]
+
     def create_node(self, image_id, flavor_id, node_name, public_key_file, progress=None):
         conn = self._get_conn()
         fake_image = NodeImage(id=image_id, name=None, driver=conn)

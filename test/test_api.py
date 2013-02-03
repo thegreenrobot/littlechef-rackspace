@@ -1,6 +1,6 @@
 from StringIO import StringIO
 import unittest
-from libcloud.compute.base import NodeImage, Node
+from libcloud.compute.base import NodeImage, Node, NodeSize
 from libcloud.compute.types import Provider, NodeState
 import mock
 from littlechef_rackspace.api import RackspaceApi, Regions
@@ -64,6 +64,23 @@ class RackspaceApiTest(unittest.TestCase):
                                'id': lc_image2.id,
                                'name': lc_image2.name
                            }], api.list_images())
+
+    def test_list_flavors_returns_size_information(self):
+        conn = mock.Mock()
+        api = self._get_api_with_mocked_conn(conn)
+
+        lc_size1 = NodeSize('1', '256 MB image', None, None, None, None, None)
+        lc_size2 = NodeSize('2', '512 MB image', None, None, None, None, None)
+
+        conn.list_sizes.return_value = [lc_size1, lc_size2]
+
+        self.assertEquals([{
+                               'id': lc_size1.id,
+                               'name': lc_size1.name
+                           }, {
+                               'id': lc_size2.id,
+                               'name': lc_size2.name
+                           }], api.list_flavors())
 
     def test_creates_node(self):
         conn = mock.Mock()

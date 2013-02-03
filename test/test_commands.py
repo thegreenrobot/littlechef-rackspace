@@ -3,7 +3,7 @@ import unittest
 import mock
 import sys
 from littlechef_rackspace.api import RackspaceApi
-from littlechef_rackspace.commands import RackspaceCreate, RackspaceListImages
+from littlechef_rackspace.commands import RackspaceCreate, RackspaceListImages, RackspaceListFlavors
 from littlechef_rackspace.deploy import ChefDeployer
 from littlechef_rackspace.lib import Host
 
@@ -59,6 +59,25 @@ class RackspaceListImagesTest(unittest.TestCase):
         self.command.execute(progress=progress)
 
         self.assertEquals([
-            '{0}{1}'.format(image1['id'].ljust(38 + 5), image1['name']),
-            '{0}{1}'.format(image2['id'].ljust(38 + 5), image2['name'])
-        ], progress.getvalue().splitlines())
+                              '{0}{1}'.format(image1['id'].ljust(38 + 5), image1['name']),
+                              '{0}{1}'.format(image2['id'].ljust(38 + 5), image2['name'])
+                          ], progress.getvalue().splitlines())
+
+class RackspaceListflavorsTest(unittest.TestCase):
+
+    def setUp(self):
+        self.api = mock.Mock(spec=RackspaceApi)
+        self.command = RackspaceListFlavors(rackspace_api=self.api)
+
+    def test_outputs_flavors(self):
+        progress = StringIO()
+        flavor1 = {'id': '1', 'name': '256 MB'}
+        flavor2 = {'id': '2', 'name': '512 MB'}
+        self.api.list_flavors.return_value = [ flavor1, flavor2 ]
+
+        self.command.execute(progress=progress)
+
+        self.assertEquals([
+                              '{0}{1}'.format(flavor1['id'].ljust(10), flavor1['name']),
+                              '{0}{1}'.format(flavor2['id'].ljust(10), flavor2['name'])
+                          ], progress.getvalue().splitlines())

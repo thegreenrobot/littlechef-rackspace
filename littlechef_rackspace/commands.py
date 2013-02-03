@@ -50,3 +50,14 @@ class RackspaceListImages(Command):
         images = self.rackspace_api.list_images()
         for image in images:
             progress.write('{0}{1}\n'.format(image['id'].ljust(43), image['name']))
+
+class RackspaceListFlavors(Command):
+
+    name = "list-flavors"
+    description = "List available flavors for a Cloud Servers endpoint"
+    requires_api = True
+
+    def execute(self, progress, **kwargs):
+        flavors = self.rackspace_api.list_flavors()
+        for flavor in flavors:
+            progress.write('{0}{1}\n'.format(flavor['id'].ljust(10), flavor['name']))

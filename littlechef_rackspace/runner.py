@@ -3,10 +3,12 @@ import sys
 from optparse import OptionParser
 from api import RackspaceApi, Regions
 from deploy import ChefDeployer
-from commands import RackspaceCreate, RackspaceListImages
+from commands import RackspaceCreate, RackspaceListImages, RackspaceListFlavors
 
 def get_command_classes():
-    return [RackspaceCreate, RackspaceListImages]
+    return [RackspaceCreate,
+            RackspaceListImages,
+            RackspaceListFlavors]
 
 
 class RackspaceOptionParser(OptionParser):
