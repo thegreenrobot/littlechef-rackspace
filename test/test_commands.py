@@ -63,7 +63,7 @@ class RackspaceListImagesTest(unittest.TestCase):
                               '{0}{1}'.format(image2['id'].ljust(38 + 5), image2['name'])
                           ], progress.getvalue().splitlines())
 
-class RackspaceListflavorsTest(unittest.TestCase):
+class RackspaceListFlavorsTest(unittest.TestCase):
 
     def setUp(self):
         self.api = mock.Mock(spec=RackspaceApi)
