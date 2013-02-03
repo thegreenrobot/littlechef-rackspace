@@ -28,7 +28,8 @@ python littlechef_rackspace/runner.py
     --flavor 2 \
     --node-name "test-creation" \
     --public-key <public_key_file> \
-    --private-key <private_key_file>
+    --private-key <private_key_file> \
+    --runlist "role[web],recipe[security-updates]"
 ```
 
 The server is created with your public key file in the `/root/.ssh/authorized_keys`.
