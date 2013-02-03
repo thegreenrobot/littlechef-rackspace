@@ -21,9 +21,9 @@ class RunnerTest(unittest.TestCase):
 
         self.list_images_command = self.list_images_class.return_value
 
-        # Dumb hack using README.md as a public key because you can't mock out a file() call
+        # Dumb hacks using README.md as a public key because you can't mock out a file() call
         self.create_args = "create --flavor 2 --image 123 --node-name test-node --username username --key deadbeef --region dfw --public-key README.md".split(' ')
-        self.list_images_args = "list-images --username username --key deadbeef --region dfw".split(' ')
+        self.list_images_args = "list-images --username username --key deadbeef --region dfw --public-key README.md".split(' ')
 
     def test_must_specify_command(self):
         r = Runner()
@@ -41,9 +41,9 @@ class RunnerTest(unittest.TestCase):
             r.main(["list-images"])
 
     def test_list_images_instantiates_api(self):
-        r = Runner()
         with mock.patch.multiple("littlechef_rackspace.runner", RackspaceApi=self.api_class,
                                  ChefDeployer=self.deploy_class, RackspaceListImages=self.list_images_class):
+            r = Runner()
             r.main(self.list_images_args)
             self.api_class.assert_any_call(username="username", apikey="deadbeef", region=Regions.DFW)
 
@@ -53,8 +53,9 @@ class RunnerTest(unittest.TestCase):
             r.main(["create"])
 
     def test_create_fails_if_required_arguments_are_not_provided(self):
-        r = Runner()
         with self.assertRaises(MissingRequiredArguments):
+            r = Runner()
+            self.create_command.validate_args.return_value = False
             r.main("create --username username --key deadbeef --region dfw".split(" "))
 
     def test_create_instantiates_api_and_deploy_with_default_private_key(self):

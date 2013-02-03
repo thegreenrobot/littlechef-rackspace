@@ -3,7 +3,7 @@ import unittest
 import mock
 import sys
 from littlechef_rackspace.api import RackspaceApi
-from littlechef_rackspace.commands import RackspaceCreate
+from littlechef_rackspace.commands import RackspaceCreate, RackspaceListImages
 from littlechef_rackspace.deploy import ChefDeployer
 from littlechef_rackspace.lib import Host
 
@@ -28,7 +28,7 @@ class RackspaceCreateTest(unittest.TestCase):
 
         self.api.create_node.assert_any_call(node_name=node_name, image_id=image_id,
                                              flavor_id=flavor_id, public_key_file=public_key_file,
-                                             progress=sys.stderr)
+                                             progress=sys.stdout)
 
     def test_deploys_to_host_without_runlist(self):
         self.command.execute(node_name="something", image_id="imageId",
@@ -43,3 +43,22 @@ class RackspaceCreateTest(unittest.TestCase):
                              runlist=runlist)
 
         self.deployer.deploy.assert_any_call(host=self.host, runlist=runlist)
+
+class RackspaceListImagesTest(unittest.TestCase):
+
+    def setUp(self):
+        self.api = mock.Mock(spec=RackspaceApi)
+        self.command = RackspaceListImages(rackspace_api=self.api)
+
+    def test_outputs_images(self):
+        progress = StringIO()
+        image1 = {'id': '1', 'name': 'Ubuntu 12.04 LTS'}
+        image2 = {'id': '2', 'name': 'Ubuntu 10.04 LTS'}
+        self.api.list_images.return_value = [ image1, image2 ]
+
+        self.command.execute(progress=progress)
+
+        self.assertEquals([
+            '{0}{1}'.format(image1['id'].ljust(38 + 5), image1['name']),
+            '{0}{1}'.format(image2['id'].ljust(38 + 5), image2['name'])
+        ], progress.getvalue().splitlines())

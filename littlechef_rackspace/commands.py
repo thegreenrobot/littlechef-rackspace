@@ -11,6 +11,9 @@ class Command(object):
     def execute(self, **kwargs):
         pass
 
+    def validate_args(self, **kwargs):
+        return True
+
 class RackspaceCreate(Command):
 
     name = "create"
@@ -25,9 +28,17 @@ class RackspaceCreate(Command):
     def execute(self, node_name, flavor_id, image_id, public_key_file, runlist=[], **kwargs):
         host = self.rackspace_api.create_node(node_name=node_name, flavor_id=flavor_id,
                                               image_id=image_id, public_key_file=public_key_file,
-                                              progress=sys.stderr)
+                                              progress=sys.stdout)
         self.chef_deploy.deploy(host=host, runlist=runlist)
         # TODO: possibly rename host file based on another argument and yell about setting up DNS
+
+    def validate_args(self, **kwargs):
+        required_args = ["node_name", "flavor_id", "image_id"]
+        for arg in required_args:
+            if not kwargs[arg]:
+                return False
+
+        return True
 
 class RackspaceListImages(Command):
 
@@ -35,5 +46,7 @@ class RackspaceListImages(Command):
     description = "List available images for a Cloud Servers endpoint"
     requires_api = True
 
-    def execute(self, **kwargs):
-        self.rackspace_api.list_images(progress=sys.stderr)
+    def execute(self, progress, **kwargs):
+        images = self.rackspace_api.list_images()
+        for image in images:
+            progress.write('{0}{1}\n'.format(image['id'].ljust(43), image['name']))

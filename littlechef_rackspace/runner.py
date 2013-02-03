@@ -1,3 +1,4 @@
+import os
 import sys
 from optparse import OptionParser
 from api import RackspaceApi, Regions
@@ -42,9 +43,6 @@ class Runner(object):
     def __init__(self):
         self.command_classes = get_command_classes()
 
-    def _get_command(self):
-        pass
-
     def get_api(self, options):
         if not options.username or not options.apikey or not options.region:
             raise InvalidConfiguration('Must specify username, API key, and region')
@@ -88,19 +86,21 @@ class Runner(object):
         command = command_class(**command_kwargs)
 
         args = vars(options)
+
+        if not command.validate_args(**args):
+            raise MissingRequiredArguments("Missing required arguments")
+
         if args['public_key']:
             args['public_key_file'] = file(args['public_key'])
         else:
-            args['public_key_file'] = file('~/.ssh/id_rsa.pub')
+            args['public_key_file'] = file(os.path.expanduser('~/.ssh/id_rsa.pub'))
 
         if args['runlist']:
             args['runlist'] = args['runlist'].split(',')
 
-        try:
-            command.execute(**args)
-        except TypeError:
-            raise MissingRequiredArguments("Missing required arguments")
+        args['progress'] = sys.stdout
 
+        command.execute(**args)
 
 class MissingRequiredArguments(Exception):
     pass
