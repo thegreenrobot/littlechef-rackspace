@@ -6,8 +6,6 @@ from libcloud.compute.types import Provider, NodeState
 import time
 from options import parser
 from littlechef import runner as lc
-from littlechef import lib as lc_lib
-from littlechef import chef as lc_chef
 
 def raise_error(text):
     print("Error: %s" % text)
@@ -84,6 +82,8 @@ def save_node(options, node):
 
     roles = options.roles.split(',')
     if roles:
+        # TODO use littlechef lib /chef modules directly to avoid
+        # running chef multiple times here
         for role in roles:
             lc.role(role)
     else:
