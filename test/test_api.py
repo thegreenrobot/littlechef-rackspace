@@ -1,6 +1,6 @@
 from StringIO import StringIO
 import unittest
-from libcloud.compute.base import NodeImage, NodeSize, Node
+from libcloud.compute.base import NodeImage, Node
 from libcloud.compute.types import Provider, NodeState
 import mock
 from littlechef_rackspace.api import RackspaceApi, Regions

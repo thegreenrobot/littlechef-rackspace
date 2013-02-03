@@ -1,6 +1,7 @@
 import sys
-from lib import raise_error, deploy_chef, save_node
+from lib import raise_error
 from api import RackspaceApi, Regions
+from deploy import ChefDeployer
 from options import parser
 
 (options, args) = parser.parse_args()
@@ -21,5 +22,10 @@ host = api.create_node(node_name=options.nodename,
                        flavor_id=options.flavor,
                        public_key_file=file(options.public_key),
                        progress=sys.stderr)
-deploy_chef(options, host)
-save_node(options, host)
+deployer = ChefDeployer(key_filename=options.private_key)
+
+runlist = None
+if options.roles:
+    runlist = ['role[{0}]'.format(role) for role in options.roles.split(',')]
+
+deployer.deploy(host, runlist)
