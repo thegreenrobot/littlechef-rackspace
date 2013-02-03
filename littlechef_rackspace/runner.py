@@ -90,6 +90,9 @@ class Runner(object):
         args = vars(options)
         if args['public_key']:
             args['public_key_file'] = file(args['public_key'])
+        else:
+            args['public_key_file'] = file('~/.ssh/id_rsa.pub')
+
         if args['runlist']:
             args['runlist'] = args['runlist'].split(',')
 
