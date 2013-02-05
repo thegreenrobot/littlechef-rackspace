@@ -114,17 +114,3 @@ class InvalidConfiguration(Exception):
 
 class InvalidCommand(Exception):
     pass
-
-if __name__ == "__main__":
-    r = Runner()
-    try:
-        r.main(sys.argv[1:])
-    except MissingRequiredArguments:
-        print "Not all arguments for command provided"
-        parser.print_help()
-    except InvalidConfiguration:
-        print "Could not determine API configuration: must specify username, api key, and region"
-        parser.print_help()
-    except InvalidCommand:
-        print "Invalid command specified"
-        parser.print_help()

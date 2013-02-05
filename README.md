@@ -19,8 +19,7 @@ pip install libcloud
 ## Rackspace Create
 
 ```
-python littlechef_rackspace/runner.py
-    create \
+fix-rackspace create \
     --username <username> \
     --key <api_key> \
     --region <region, must be DFW or ORD> \
