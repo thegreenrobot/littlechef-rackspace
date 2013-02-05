@@ -14,7 +14,6 @@ pip install -r requirements.txt
 ```
 
 * TODO: rebuild a server
-* TODO: also look in littlechef config file for certain command line args
 * TODO: set up install w/pip, validate that running scripts works in any littlechef kitchen
 
 ## Rackspace Create
