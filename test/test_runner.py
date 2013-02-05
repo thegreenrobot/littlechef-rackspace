@@ -57,7 +57,8 @@ class RunnerTest(unittest.TestCase):
                 'key': 'deadbeef',
                 'region': 'ord'
             })
-            r.main(['list-images'])
+            # another dumb hack
+            r.main(['list-images', '--public-key', 'README.md'])
             self.api_class.assert_any_call(username="username", key="deadbeef", region=Regions.ORD)
 
     def test_create_fails_if_configuration_is_not_provided(self):
