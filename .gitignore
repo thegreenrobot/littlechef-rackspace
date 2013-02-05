@@ -9,3 +9,6 @@ site-cookbooks/
 cookbooks/
 config.cfg
 rackspace.cfg
+*.egg-info/
+build/
+dist/

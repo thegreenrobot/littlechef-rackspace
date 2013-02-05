@@ -7,14 +7,15 @@ Meant to replace `knife rackspace` when a Chef Server is not in use.
 
 Currently only supports creating a new server.
 
-Requires littlechef and libcloud.
+Built on top of the excellent libcloud and littlechef libraries.
+
+## Installation Instructions
 
 ```
-pip install -r requirements.txt
+pip install littlechef-rackspace
 ```
 
 * TODO: rebuild a server
-* TODO: set up install w/pip, validate that running scripts works in any littlechef kitchen
 
 ## Rackspace Create
 
