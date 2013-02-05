@@ -5,11 +5,12 @@ Meant to replace `knife rackspace` when a Chef Server is not in use.
 
 Currently only supports creating a new server.
 
-Requires littlechef and libcloud:
+![Build Status](https://api.travis-ci.org/tildedave/littlechef-rackspace.png)]
+
+Requires littlechef and libcloud.
 
 ```
-pip install littlechef
-pip install libcloud
+pip install -r requirements.txt
 ```
 
 * TODO: rebuild a server
