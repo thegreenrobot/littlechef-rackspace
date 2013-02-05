@@ -1,0 +1,2 @@
+apache-libcloud>=0.11.04
+littlechef
