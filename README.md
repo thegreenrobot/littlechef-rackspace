@@ -3,9 +3,8 @@
 [![Build Status](https://travis-ci.org/tildedave/littlechef-rackspace.png)](https://travis-ci.org/tildedave/littlechef-rackspace)
 
 Libraries for deploying chef to Rackspace Cloud Servers powered by OpenStack.
-Meant to replace `knife rackspace` when a Chef Server is not in use.
 
-Currently only supports creating a new server.
+Meant to replace `knife rackspace` when a Chef Server is not in use.
 
 Built on top of the excellent libcloud and littlechef libraries.
 
@@ -14,8 +13,6 @@ Built on top of the excellent libcloud and littlechef libraries.
 ```
 pip install littlechef-rackspace
 ```
-
-* TODO: rebuild a server
 
 ## Rackspace Create
 
