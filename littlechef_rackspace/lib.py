@@ -1,11 +1,3 @@
-import sys
-from options import parser
-
-def raise_error(text):
-    print("Error: %s" % text)
-    parser.print_help()
-    sys.exit(1)
-
 class Host(object):
 
     """
