@@ -8,3 +8,4 @@ roles/
 site-cookbooks/
 cookbooks/
 config.cfg
+rackspace.cfg

@@ -1,6 +1,8 @@
+import ConfigParser
 import os
 import sys
 from optparse import OptionParser
+import littlechef
 from api import RackspaceApi, Regions
 from deploy import ChefDeployer
 from commands import RackspaceCreate, RackspaceListImages, RackspaceListFlavors
@@ -22,15 +24,15 @@ class RackspaceOptionParser(OptionParser):
 
 
 parser = RackspaceOptionParser()
-parser.add_option("-I", "--image", dest="image_id",
+parser.add_option("-I", "--image", dest="image",
                   help="Image ID")
-parser.add_option("-f", "--flavor", dest="flavor_id",
+parser.add_option("-f", "--flavor", dest="flavor",
                   help="Flavor ID")
 parser.add_option("-A", "--username", dest="username",
                   help="Rackspace Username")
 parser.add_option("-N", "--node-name", dest="node_name",
                   help="Node name")
-parser.add_option("-K", "--key", dest="apikey",
+parser.add_option("-K", "--key", dest="key",
                   help="Rackspace API Key")
 parser.add_option("-R", "--region", dest="region", default="",
                   help="Region for provisioning (required for OpenStack)")
@@ -42,21 +44,51 @@ parser.add_option("-r", "--runlist", dest="runlist",
                   help="Node runlist delimited by commas, e.g. 'role[web],recipe[db]'")
 
 class Runner(object):
-    def __init__(self):
+    def _read_littlechef_config(self):
+        try:
+            config = ConfigParser.SafeConfigParser()
+            success = config.read(littlechef.CONFIGFILE)
+            if success:
+                return dict(config.items('rackspace'))
+        except ConfigParser.ParsingError:
+            pass
+
+        return None
+
+    def __init__(self, options=None):
         self.command_classes = get_command_classes()
+        if options is None:
+            options = self._read_littlechef_config()
+
+        self.options = options or {}
+
+        secrets_file = self.options.get('secrets-file')
+        if secrets_file:
+            try:
+                del self.options['secrets-file']
+                secrets_file = os.path.expanduser(secrets_file)
+                # yes, look at another config file
+                secrets_config = ConfigParser.SafeConfigParser()
+                _ = secrets_config.read(secrets_file)
+                self.options.update(dict(secrets_config.items(ConfigParser.DEFAULTSECT)))
+            except ConfigParser.ParsingError:
+                pass
 
     def get_api(self, options):
-        if not options.username or not options.apikey or not options.region:
+        username = self.options.get('username')
+        key = self.options.get('key')
+        region = self.options.get('region', '')
+        if region.lower() == 'dfw':
+            region = Regions.DFW
+        elif region.lower() == 'ord':
+            region = Regions.ORD
+        else:
+            region = Regions.NOT_FOUND
+
+        if not username or not key or not region:
             raise InvalidConfiguration('Must specify username, API key, and region')
 
-        username = options.username
-        apikey = options.apikey
-        if options.region.lower() == 'dfw':
-            region = Regions.DFW
-        else:
-            region = Regions.ORD
-
-        return RackspaceApi(username=username, apikey=apikey, region=region)
+        return RackspaceApi(username=username, key=key, region=region)
 
     def get_deploy(self, options):
         key_filename = options.private_key or "~/.ssh/id_rsa"
@@ -75,8 +107,11 @@ class Runner(object):
         if not matched_commands:
             raise InvalidCommand
 
-        command_class = matched_commands[0]
+        for k, v in vars(options).items():
+            if v:
+                self.options[k] = v
 
+        command_class = matched_commands[0]
         command_kwargs = {'rackspace_api': None,
                           'chef_deployer': None}
 
@@ -86,7 +121,6 @@ class Runner(object):
             command_kwargs['chef_deployer'] = self.get_deploy(options)
 
         command = command_class(**command_kwargs)
-
         args = vars(options)
 
         if not command.validate_args(**args):

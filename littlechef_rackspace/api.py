@@ -7,9 +7,9 @@ from lib import Host
 
 class RackspaceApi(object):
 
-    def __init__(self, username, apikey, region):
+    def __init__(self, username, key, region):
         self.username = username
-        self.apikey = apikey
+        self.key = key
         self.region = region
 
     def _get_conn(self):
@@ -19,7 +19,7 @@ class RackspaceApi(object):
             provider = Provider.RACKSPACE_NOVA_ORD
 
         Driver = get_driver(provider)
-        return Driver(self.username, self.apikey,
+        return Driver(self.username, self.key,
                       ex_force_auth_url="https://identity.api.rackspacecloud.com/v2.0",
                       ex_force_auth_version="2.0")
 
@@ -35,14 +35,14 @@ class RackspaceApi(object):
         return [{ "id": size.id, "name": size.name}
                 for size in conn.list_sizes()]
 
-    def create_node(self, image_id, flavor_id, node_name, public_key_file, progress=None):
+    def create_node(self, image, flavor, node_name, public_key_file, progress=None):
         conn = self._get_conn()
-        fake_image = NodeImage(id=image_id, name=None, driver=conn)
-        fake_flavor = NodeSize(id=flavor_id, name=None, ram=None, disk=None,
+        fake_image = NodeImage(id=image, name=None, driver=conn)
+        fake_flavor = NodeSize(id=flavor, name=None, ram=None, disk=None,
                                bandwidth=None, price=None, driver=conn)
 
         if progress:
-            progress.write("Creating node {0} (image: {1}, flavor: {2})...\n".format(node_name, image_id, flavor_id))
+            progress.write("Creating node {0} (image: {1}, flavor: {2})...\n".format(node_name, image, flavor))
 
         node = conn.create_node(name=node_name, image=fake_image,
                          size=fake_flavor, ex_files={
@@ -72,5 +72,6 @@ class RackspaceApi(object):
                     password=password)
 
 class Regions(object):
-    DFW = 0
-    ORD = 1
+    NOT_FOUND = 0
+    DFW = 1
+    ORD = 2

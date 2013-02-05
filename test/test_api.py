@@ -10,7 +10,7 @@ from littlechef_rackspace.lib import Host
 class RackspaceApiTest(unittest.TestCase):
     def setUp(self):
         self.username = 'username'
-        self.apikey = 'deadbeef'
+        self.key = 'deadbeef'
 
         self.pending_node = Node(id='id', name='name', public_ips=[], private_ips=[],
                                  state=NodeState.PENDING, driver=None)
@@ -25,7 +25,7 @@ class RackspaceApiTest(unittest.TestCase):
             api = self._get_api(Regions.DFW)
             api.list_images()
 
-            driver.assert_any_call(self.username, self.apikey,
+            driver.assert_any_call(self.username, self.key,
                                    ex_force_auth_url="https://identity.api.rackspacecloud.com/v2.0",
                                    ex_force_auth_version="2.0")
 
@@ -94,8 +94,8 @@ class RackspaceApiTest(unittest.TestCase):
         conn.create_node.return_value = self.active_node
 
         api.create_node(node_name=node_name,
-                        image_id=image_id,
-                        flavor_id=flavor_id,
+                        image=image_id,
+                        flavor=flavor_id,
                         public_key_file=public_key_io)
 
         call_kwargs = conn.create_node.call_args_list[0][1]
@@ -114,8 +114,8 @@ class RackspaceApiTest(unittest.TestCase):
 
         with mock.patch('littlechef_rackspace.api.time') as time:
             api.create_node(node_name="some name",
-                            image_id="5cebb13a-f783-4f8c-8058-c4182c724ccd",
-                            flavor_id="2",
+                            image="5cebb13a-f783-4f8c-8058-c4182c724ccd",
+                            flavor="2",
                             public_key_file=StringIO("some public key"))
             time.sleep.assert_any_call(5)
 
@@ -132,8 +132,8 @@ class RackspaceApiTest(unittest.TestCase):
         conn.create_node.return_value = self.active_node
 
         result = api.create_node(node_name="some name",
-                                 image_id="5cebb13a-f783-4f8c-8058-c4182c724ccd",
-                                 flavor_id="2",
+                                 image="5cebb13a-f783-4f8c-8058-c4182c724ccd",
+                                 flavor="2",
                                  public_key_file=StringIO("some public key"))
 
         self.assertEquals(result, Host(name="some name",
@@ -164,8 +164,10 @@ class RackspaceApiTest(unittest.TestCase):
             node_name = "new node"
             image_id = "dontcare"
             flavor_id = "2"
-            host = api.create_node(node_name=node_name, image_id=image_id,
-                                   flavor_id=flavor_id, public_key_file=StringIO("some key"),
+            host = api.create_node(node_name=node_name,
+                                   image=image_id,
+                                   flavor=flavor_id,
+                                   public_key_file=StringIO("some key"),
                                    progress=progress)
 
             self.assertEquals([
@@ -176,4 +178,4 @@ class RackspaceApiTest(unittest.TestCase):
             ], progress.getvalue().splitlines())
 
     def _get_api(self, region):
-        return RackspaceApi(self.username, self.apikey, region)
+        return RackspaceApi(self.username, self.key, region)
