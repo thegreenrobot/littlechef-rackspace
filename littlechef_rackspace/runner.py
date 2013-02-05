@@ -92,10 +92,8 @@ class Runner(object):
         if not command.validate_args(**args):
             raise MissingRequiredArguments("Missing required arguments")
 
-        if args['public_key']:
-            args['public_key_file'] = file(args['public_key'])
-        else:
-            args['public_key_file'] = file(os.path.expanduser('~/.ssh/id_rsa.pub'))
+        public_key = args['public_key'] or "~/.ssh/id_rsa.pub"
+        args['public_key_file'] = file(os.path.expanduser(public_key))
 
         if args['runlist']:
             args['runlist'] = args['runlist'].split(',')

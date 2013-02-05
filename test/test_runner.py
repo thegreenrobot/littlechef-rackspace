@@ -67,14 +67,11 @@ class RunnerTest(unittest.TestCase):
             self.api_class.assert_any_call(username="username", apikey="deadbeef", region=Regions.DFW)
             self.deploy_class.assert_any_call(key_filename="~/.ssh/id_rsa")
 
-    def test_create_creates_node(self):
+    def test_create_creates_node_with_specified_public_key(self):
         with mock.patch.multiple("littlechef_rackspace.runner", RackspaceApi=self.api_class,
                                  ChefDeployer=self.deploy_class, RackspaceCreate=self.create_class):
             r = Runner()
             r.main(self.create_args)
-
-            print r.command_classes
-            print self.create_class
 
             self.create_class.assert_any_call(rackspace_api=self.rackspace_api,
                                               chef_deployer=self.chef_deployer)
@@ -84,6 +81,7 @@ class RunnerTest(unittest.TestCase):
             self.assertEquals("123", call_args["image_id"])
             self.assertEquals("2", call_args["flavor_id"])
             self.assertEquals("test-node", call_args["node_name"])
+            self.assertEquals('README.md', call_args['public_key_file'].name)
 
     def test_create_with_runlist_parses_runlist_into_array(self):
         with mock.patch.multiple("littlechef_rackspace.runner", RackspaceApi=self.api_class,
