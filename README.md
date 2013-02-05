@@ -1,11 +1,11 @@
 # Littlechef-Rackspace
 
+![Build Status](https://api.travis-ci.org/tildedave/littlechef-rackspace.png)
+
 Libraries for deploying chef to Rackspace Cloud Servers powered by OpenStack.
 Meant to replace `knife rackspace` when a Chef Server is not in use.
 
 Currently only supports creating a new server.
-
-![Build Status](https://api.travis-ci.org/tildedave/littlechef-rackspace.png)]
 
 Requires littlechef and libcloud.
 
