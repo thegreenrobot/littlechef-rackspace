@@ -19,27 +19,27 @@ class RackspaceCreateTest(unittest.TestCase):
 
     def test_creates_host_in_api(self):
         node_name = "test"
-        image_id = "imageId"
-        flavor_id = "flavorId"
+        image = "imageId"
+        flavor = "flavorId"
         public_key_file = StringIO("~/.ssh/id_rsa.pub")
 
-        self.command.execute(node_name=node_name, image_id=image_id,
-                             flavor_id=flavor_id, public_key_file=public_key_file)
+        self.command.execute(node_name=node_name, image=image,
+                             flavor=flavor, public_key_file=public_key_file)
 
-        self.api.create_node.assert_any_call(node_name=node_name, image_id=image_id,
-                                             flavor_id=flavor_id, public_key_file=public_key_file,
+        self.api.create_node.assert_any_call(node_name=node_name, image=image,
+                                             flavor=flavor, public_key_file=public_key_file,
                                              progress=sys.stdout)
 
     def test_deploys_to_host_without_runlist(self):
-        self.command.execute(node_name="something", image_id="imageId",
-                             flavor_id="fileId", public_key_file=StringIO("whatever"))
+        self.command.execute(node_name="something", image="imageId",
+                             flavor="fileId", public_key_file=StringIO("whatever"))
 
         self.deployer.deploy.assert_any_call(host=self.host, runlist=[])
 
     def test_deploys_to_host_with_runlist(self):
         runlist = ["role[web]", "recipe[test]"]
-        self.command.execute(node_name="something", image_id="imageId",
-                             flavor_id="fileId", public_key_file=StringIO("whatever"),
+        self.command.execute(node_name="something", image="imageId",
+                             flavor="fileId", public_key_file=StringIO("whatever"),
                              runlist=runlist)
 
         self.deployer.deploy.assert_any_call(host=self.host, runlist=runlist)

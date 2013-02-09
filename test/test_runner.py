@@ -68,8 +68,8 @@ class RunnerTest(unittest.TestCase):
 
     def test_create_fails_if_required_arguments_are_not_provided(self):
         with self.assertRaises(MissingRequiredArguments):
-            r = Runner(options={})
             self.create_command.validate_args.return_value = False
+            r = Runner(options={})
             r.main("create --username username --key deadbeef --region dfw".split(" "))
 
     def test_create_instantiates_api_and_deploy_with_default_private_key(self):

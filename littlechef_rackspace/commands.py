@@ -25,17 +25,17 @@ class RackspaceCreate(Command):
         super(RackspaceCreate, self).__init__(rackspace_api)
         self.chef_deploy = chef_deployer
 
-    def execute(self, node_name, flavor_id, image_id, public_key_file, runlist=[], **kwargs):
-        host = self.rackspace_api.create_node(node_name=node_name, flavor_id=flavor_id,
-                                              image_id=image_id, public_key_file=public_key_file,
+    def execute(self, node_name, flavor, image, public_key_file, runlist=[], **kwargs):
+        host = self.rackspace_api.create_node(node_name=node_name, flavor=flavor,
+                                              image=image, public_key_file=public_key_file,
                                               progress=sys.stdout)
         self.chef_deploy.deploy(host=host, runlist=runlist)
         # TODO: possibly rename host file based on another argument and yell about setting up DNS
 
     def validate_args(self, **kwargs):
-        required_args = ["node_name", "flavor_id", "image_id"]
+        required_args = ["node_name", "flavor", "image"]
         for arg in required_args:
-            if not kwargs[arg]:
+            if not kwargs.get(arg):
                 return False
 
         return True

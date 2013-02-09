@@ -74,7 +74,7 @@ class Runner(object):
             except ConfigParser.ParsingError:
                 pass
 
-    def get_api(self, options):
+    def get_api(self):
         username = self.options.get('username')
         key = self.options.get('key')
         region = self.options.get('region', '')
@@ -90,8 +90,8 @@ class Runner(object):
 
         return RackspaceApi(username=username, key=key, region=region)
 
-    def get_deploy(self, options):
-        key_filename = options.private_key or "~/.ssh/id_rsa"
+    def get_deploy(self):
+        key_filename = self.options.get("private_key", "~/.ssh/id_rsa")
         return ChefDeployer(key_filename=key_filename)
 
     def main(self, cmd_args):
@@ -116,23 +116,25 @@ class Runner(object):
                           'chef_deployer': None}
 
         if command_class.requires_api:
-            command_kwargs['rackspace_api'] = self.get_api(options)
+            command_kwargs['rackspace_api'] = self.get_api()
         if command_class.requires_deploy:
-            command_kwargs['chef_deployer'] = self.get_deploy(options)
+            command_kwargs['chef_deployer'] = self.get_deploy()
 
         command = command_class(**command_kwargs)
-        args = vars(options)
+
+        args = self.options
+        print self.options
 
         if not command.validate_args(**args):
             raise MissingRequiredArguments("Missing required arguments")
 
-        public_key = args['public_key'] or "~/.ssh/id_rsa.pub"
+        public_key = args.get('public_key', "~/.ssh/id_rsa.pub")
         args['public_key_file'] = file(os.path.expanduser(public_key))
 
-        if args['runlist']:
+        if args.get('runlist'):
             args['runlist'] = args['runlist'].split(',')
 
-        args['progress'] = sys.stdout
+        args['progress'] = sys.stderr
 
         command.execute(**args)
 
