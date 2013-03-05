@@ -70,7 +70,7 @@ class ChefDeployer(object):
         """
 
         bootstrap_ssh_config = open(bootstrap_config_file, mode="w")
-        bootstrap_ssh_config.write("User root\nIdentityFile {key_filename}\n".format(
+        bootstrap_ssh_config.write("User root\nIdentityFile {key_filename}\nStrictHostKeyChecking no\n".format(
             key_filename=self.key_filename
         ))
         bootstrap_ssh_config.close()
