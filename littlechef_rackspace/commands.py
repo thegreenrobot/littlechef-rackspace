@@ -28,7 +28,7 @@ class RackspaceCreate(Command):
     def execute(self, node_name, flavor, image, public_key_file, runlist=[], **kwargs):
         host = self.rackspace_api.create_node(node_name=node_name, flavor=flavor,
                                               image=image, public_key_file=public_key_file,
-                                              progress=sys.stdout)
+                                              progress=sys.stderr)
         self.chef_deploy.deploy(host=host, runlist=runlist)
         # TODO: possibly rename host file based on another argument and yell about setting up DNS
 
@@ -46,7 +46,7 @@ class RackspaceListImages(Command):
     description = "List available images for a Cloud Servers endpoint"
     requires_api = True
 
-    def execute(self, progress, **kwargs):
+    def execute(self, progress=sys.stderr, **kwargs):
         images = self.rackspace_api.list_images()
         for image in images:
             progress.write('{0}{1}\n'.format(image['id'].ljust(43), image['name']))
@@ -57,7 +57,7 @@ class RackspaceListFlavors(Command):
     description = "List available flavors for a Cloud Servers endpoint"
     requires_api = True
 
-    def execute(self, progress, **kwargs):
+    def execute(self, progress=sys.stderr, **kwargs):
         flavors = self.rackspace_api.list_flavors()
         for flavor in flavors:
             progress.write('{0}{1}\n'.format(flavor['id'].ljust(10), flavor['name']))
