@@ -123,7 +123,6 @@ class Runner(object):
         command = command_class(**command_kwargs)
 
         args = self.options
-        print self.options
 
         if not command.validate_args(**args):
             raise MissingRequiredArguments("Missing required arguments")
@@ -133,8 +132,6 @@ class Runner(object):
 
         if args.get('runlist'):
             args['runlist'] = args['runlist'].split(',')
-
-        args['progress'] = sys.stderr
 
         command.execute(**args)
 
