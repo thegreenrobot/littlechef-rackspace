@@ -1,7 +1,7 @@
 import ConfigParser
 import os
-import sys
 from optparse import OptionParser
+from fabric.utils import abort
 import littlechef
 from api import RackspaceApi, Regions
 from deploy import ChefDeployer
@@ -11,6 +11,14 @@ def get_command_classes():
     return [RackspaceCreate,
             RackspaceListImages,
             RackspaceListFlavors]
+
+
+class FailureMessages:
+
+    NEED_API_KEY = ('Must specify username, API key, and region on command line '
+                    'or in [rackspace] configuration section of config.cfg')
+
+    MISSING_REQUIRED_ARGUMENTS = "Missing required arguments"
 
 
 class RackspaceOptionParser(OptionParser):
@@ -50,7 +58,12 @@ class Runner(object):
             success = config.read(littlechef.CONFIGFILE)
             if success:
                 return dict(config.items('rackspace'))
+            else:
+                abort("Could not read littlechef configuration file!  "
+                      "Make sure you are running in a kitchen (fix new_kitchen).")
         except ConfigParser.ParsingError:
+            pass
+        except ConfigParser.NoSectionError as e:
             pass
 
         return None
@@ -86,7 +99,7 @@ class Runner(object):
             region = Regions.NOT_FOUND
 
         if not username or not key or not region:
-            raise InvalidConfiguration('Must specify username, API key, and region')
+            abort(FailureMessages.NEED_API_KEY)
 
         return RackspaceApi(username=username, key=key, region=region)
 
@@ -125,7 +138,8 @@ class Runner(object):
         args = self.options
 
         if not command.validate_args(**args):
-            raise MissingRequiredArguments("Missing required arguments")
+            abort(FailureMessages.MISSING_REQUIRED_ARGUMENTS)
+            return
 
         public_key = args.get('public_key', "~/.ssh/id_rsa.pub")
         args['public_key_file'] = file(os.path.expanduser(public_key))
