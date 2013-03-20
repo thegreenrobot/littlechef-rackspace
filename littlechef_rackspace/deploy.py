@@ -14,7 +14,7 @@ class ChefDeployer(object):
         ip_address = host.host_string
 
         self._deploy_chef(ip_address)
-        self._save_node_data(ip_address, runlist)
+        self._save_node_data(host, runlist)
         self._bootstrap_node(ip_address)
 
     def _deploy_chef(self, ip_address):
@@ -24,11 +24,12 @@ class ChefDeployer(object):
         lc.env.host_string = ip_address
         lc.deploy_chef(ask="no")
 
-    def _save_node_data(self, ip_address, runlist):
+    def _save_node_data(self, host, runlist):
         """
         Save the runlist into the node data
         """
 
+        ip_address = host.host_string
         data = littlechef.lib.get_node(ip_address)
 
         ohai = self._get_ohai_attrs()
@@ -36,7 +37,9 @@ class ChefDeployer(object):
         data['network'] = ohai['network']
         data['hostname'] = ohai['hostname']
         data['keys'] = ohai['keys']
-        data['ipaddress'] = ip_address
+        data['ipaddress'] = host.host_string
+        if host.environment:
+            data['chef_environment'] = host.environment
         if runlist:
             data['run_list'] = runlist
 

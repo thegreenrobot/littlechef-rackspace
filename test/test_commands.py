@@ -14,8 +14,7 @@ class RackspaceCreateTest(unittest.TestCase):
         self.deployer = mock.Mock(spec=ChefDeployer)
         self.command = RackspaceCreate(rackspace_api=self.api,
                                        chef_deployer=self.deployer)
-        self.host = Host()
-        self.api.create_node.return_value = self.host
+        self.api.create_node.return_value = Host()
 
     def test_creates_host_in_api(self):
         node_name = "test"
@@ -34,7 +33,17 @@ class RackspaceCreateTest(unittest.TestCase):
         self.command.execute(node_name="something", image="imageId",
                              flavor="fileId", public_key_file=StringIO("whatever"))
 
-        self.deployer.deploy.assert_any_call(host=self.host, runlist=[])
+        self.deployer.deploy.assert_any_call(host=Host(), runlist=[])
+
+    def test_deploys_to_host_with_environment(self):
+        self.command.execute(node_name="something", image="imageId",
+                             flavor="fileId", public_key_file=StringIO("whatever"),
+                             environment='staging')
+
+        expected_host = Host()
+        expected_host.environment = 'staging'
+
+        self.deployer.deploy.assert_any_call(host=expected_host, runlist=[])
 
     def test_deploys_to_host_with_runlist(self):
         runlist = ["role[web]", "recipe[test]"]
@@ -42,7 +51,7 @@ class RackspaceCreateTest(unittest.TestCase):
                              flavor="fileId", public_key_file=StringIO("whatever"),
                              runlist=runlist)
 
-        self.deployer.deploy.assert_any_call(host=self.host, runlist=runlist)
+        self.deployer.deploy.assert_any_call(host=Host(), runlist=runlist)
 
 class RackspaceListImagesTest(unittest.TestCase):
 

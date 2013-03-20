@@ -91,6 +91,20 @@ class ChefDeployerTest(unittest.TestCase):
 
     @mock.patch('littlechef_rackspace.deploy.lc')
     @mock.patch('littlechef_rackspace.deploy.littlechef')
+    def test_deploy_with_environment_sets_environment(self, littlechef, lc):
+        deployer = self._get_deployer(key_filename="~/.ssh/id_rsa")
+        self.host.environment = 'staging'
+
+        expected_data = { 'chef_environment' : 'staging' }
+        expected_data.update(self.ohai_data)
+        littlechef.lib.get_node.return_value = expected_data
+
+        deployer.deploy(self.host)
+
+        littlechef.chef.save_config.assert_any_call(expected_data, force=True)
+
+    @mock.patch('littlechef_rackspace.deploy.lc')
+    @mock.patch('littlechef_rackspace.deploy.littlechef')
     def test_deploy_with_runlist_creates_temporary_ssh_config_file(self, littlechef, lc):
         deployer = self._get_deployer(key_filename="~/.ssh/id_rsa")
 
