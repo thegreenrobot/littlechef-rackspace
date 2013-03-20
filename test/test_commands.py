@@ -35,6 +35,13 @@ class RackspaceCreateTest(unittest.TestCase):
 
         self.deployer.deploy.assert_any_call(host=Host(), runlist=[])
 
+    def test_deploys_to_host_with_hostname(self):
+        self.command.execute(node_name="something", image="imageId",
+                             flavor="fileId", public_key_file=StringIO("whatever"),
+                             hostname="test.example.com")
+
+        self.deployer.deploy.assert_any_call(host=Host(host_string="test.example.com"), runlist=[])
+
     def test_deploys_to_host_with_environment(self):
         self.command.execute(node_name="something", image="imageId",
                              flavor="fileId", public_key_file=StringIO("whatever"),

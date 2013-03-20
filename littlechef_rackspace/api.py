@@ -68,7 +68,7 @@ class RackspaceApi(object):
             progress.write("\n")
             progress.write("Node active! (host: {0})\n".format(public_ipv4_address))
         return Host(name=node_name,
-                    host_string=public_ipv4_address,
+                    ip_address=public_ipv4_address,
                     password=password)
 
 class Regions(object):
