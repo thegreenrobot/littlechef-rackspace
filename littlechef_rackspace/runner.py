@@ -50,6 +50,9 @@ parser.add_option("-i", "--private-key", dest="private_key",
                   help="Private Key File for Bootstrapping")
 parser.add_option("-r", "--runlist", dest="runlist",
                   help="Node runlist delimited by commas, e.g. 'role[web],recipe[db]'")
+parser.add_option("-e", "--env", dest="environment",
+                  help="Environment for newly created node",
+                  default=None)
 
 class Runner(object):
     def _read_littlechef_config(self):
