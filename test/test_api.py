@@ -137,7 +137,7 @@ class RackspaceApiTest(unittest.TestCase):
                                  public_key_file=StringIO("some public key"))
 
         self.assertEquals(result, Host(name="some name",
-                                       host_string=public_ipv4_address,
+                                       ip_address=public_ipv4_address,
                                        password="password"))
 
     def test_outputs_progress_during_creation(self):
@@ -174,7 +174,7 @@ class RackspaceApiTest(unittest.TestCase):
                 "Creating node {0} (image: {1}, flavor: {2})...".format(node_name, image_id, flavor_id),
                 "Created node {0} (id: {1}, password: {2})".format(node_name, self.pending_node.id, password),
                 "Waiting for node to become active{0}".format("." * 6),
-                "Node active! (host: {0})".format(host.host_string)
+                "Node active! (host: {0})".format(host.ip_address)
             ], progress.getvalue().splitlines())
 
     def _get_api(self, region):

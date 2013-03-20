@@ -1,3 +1,4 @@
+from StringIO import StringIO
 import unittest
 import mock
 from littlechef_rackspace.lib import Host
@@ -6,7 +7,8 @@ from littlechef_rackspace.deploy import ChefDeployer
 class ChefDeployerTest(unittest.TestCase):
 
     def setUp(self):
-        self.host = Host(host_string="50.56.57.58")
+        self.host = Host(host_string="test.example.com",
+                         ip_address="50.56.57.58")
         self.ohai_data = {
             'cloud': {
                 'inet1_address': '1.2.3.4'
@@ -25,18 +27,10 @@ class ChefDeployerTest(unittest.TestCase):
 
     def _get_deployer(self, key_filename):
         deployer = ChefDeployer(key_filename=key_filename,)
-        deployer._get_ohai_attrs = mock.Mock(return_value=self.ohai_data)
+        deployer._get_ohai_attrs_from_node = mock.Mock(return_value=self.ohai_data)
         deployer._create_bootstrap_ssh_config = mock.Mock()
+
         return deployer
-
-    @mock.patch('littlechef_rackspace.deploy.lc')
-    @mock.patch('littlechef_rackspace.deploy.littlechef')
-    def test_deploy_sets_fabric_env(self, littlechef, lc):
-        deployer = self._get_deployer(key_filename="~/.ssh/id_rsa")
-        deployer.deploy(self.host)
-
-        self.assertEquals(self.host.host_string, lc.env.host)
-        self.assertEquals(self.host.host_string, lc.env.host_string)
 
     @mock.patch('littlechef_rackspace.deploy.lc')
     @mock.patch('littlechef_rackspace.deploy.littlechef')
@@ -69,8 +63,22 @@ class ChefDeployerTest(unittest.TestCase):
 
         deployer.deploy(self.host)
 
+        littlechef.lib.get_node.assert_any_call(self.host.host_string)
         node_data.update(self.ohai_data)
         littlechef.chef.save_config.assert_any_call(node_data, force=True)
+
+    @mock.patch('littlechef_rackspace.deploy.lc')
+    @mock.patch('littlechef_rackspace.deploy.littlechef')
+    def test_deploy_without_hostname_gets_node_with_ip_address(self, littlechef, lc):
+        deployer = self._get_deployer(key_filename="~/.ssh/id_rsa")
+
+        node_data = {}
+        self.host.host_string = None
+        littlechef.lib.get_node.return_value = node_data
+
+        deployer.deploy(self.host)
+
+        littlechef.lib.get_node.assert_any_call(self.host.ip_address)
 
     @mock.patch('littlechef_rackspace.deploy.lc')
     @mock.patch('littlechef_rackspace.deploy.littlechef')
@@ -110,7 +118,14 @@ class ChefDeployerTest(unittest.TestCase):
 
         deployer.deploy(self.host)
 
-        deployer._create_bootstrap_ssh_config.assert_any_call("./.bootstrap-config")
+        expected_ssh_config = """User root
+IdentityFile ~/.ssh/id_rsa
+StrictHostKeyChecking no
+Host test.example.com
+HostName 50.56.57.58
+"""
+
+        deployer._create_bootstrap_ssh_config.assert_any_call("./.bootstrap-config", expected_ssh_config)
 
     @mock.patch('littlechef_rackspace.deploy.lc')
     @mock.patch('littlechef_rackspace.deploy.littlechef')
