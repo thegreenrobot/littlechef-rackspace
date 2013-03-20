@@ -5,11 +5,18 @@ class Host(object):
     for Chef deployment, role addition, etc.
     """
 
-    def __init__(self, name=None, host_string=None, password=None, environment=None):
+    def __init__(self, name=None, host_string=None, ip_address=None, password=None, environment=None):
         self.name = name
         self.host_string = host_string
+        self.ip_address = ip_address
         self.password = password
         self.environment = environment
+
+    def get_host_string(self):
+        if self.host_string:
+            return self.host_string
+
+        return self.ip_address
 
     def __repr__(self):
         return '<Host name={0}, host_string={1}, password={2}>'.format(
