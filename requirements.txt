@@ -1,2 +1,2 @@
 apache-libcloud>=0.11.4
-littlechef
+littlechef==1.5.1
