@@ -53,6 +53,9 @@ parser.add_option("-r", "--runlist", dest="runlist",
 parser.add_option("-e", "--env", dest="environment",
                   help="Environment for newly created node",
                   default=None)
+parser.add_option("-H", "--hostname", dest="hostname",
+                  help="Hostname for newly created node (DNS will not be set up -- you must do this manually)",
+                  default=None)
 
 class Runner(object):
     def _read_littlechef_config(self):

@@ -25,15 +25,16 @@ class RackspaceCreate(Command):
         super(RackspaceCreate, self).__init__(rackspace_api)
         self.chef_deploy = chef_deployer
 
-    def execute(self, node_name, flavor, image, public_key_file, runlist=[], environment=None, **kwargs):
+    def execute(self, node_name, flavor, image, public_key_file, runlist=[], environment=None, hostname=None, **kwargs):
         host = self.rackspace_api.create_node(node_name=node_name, flavor=flavor,
                                               image=image, public_key_file=public_key_file,
                                               progress=sys.stderr)
         if environment:
             host.environment = environment
+        if hostname:
+            host.host_string = hostname
+
         self.chef_deploy.deploy(host=host, runlist=runlist)
-        # TODO: rename host file based on another argument
-        # TODO: handle ip address returned with mock SSH config in the deployer
 
     def validate_args(self, **kwargs):
         required_args = ["node_name", "flavor", "image"]
