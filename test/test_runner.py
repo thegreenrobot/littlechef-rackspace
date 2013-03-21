@@ -120,10 +120,20 @@ class RunnerTest(unittest.TestCase):
 
     def test_create_with_runlist_parses_runlist_into_array(self):
         with mock.patch.multiple("littlechef_rackspace.runner", RackspaceApi=self.api_class,
-                             ChefDeployer=self.deploy_class, RackspaceCreate=self.create_class):
+                                 ChefDeployer=self.deploy_class, RackspaceCreate=self.create_class):
             r = Runner(options={})
             runlist = 'role[test],recipe[web],recipe[apache2]'
             r.main(self.create_args + [ '--runlist', runlist ])
 
             call_args = self.create_command.execute.call_args_list[0][1]
             self.assertEquals(runlist.split(','), call_args["runlist"])
+
+    def test_create_with_plugins_parses_plugins_into_array(self):
+        with mock.patch.multiple("littlechef_rackspace.runner", RackspaceApi=self.api_class,
+                                 ChefDeployer=self.deploy_class, RackspaceCreate=self.create_class):
+            r = Runner(options={})
+            plugins = 'plugin1,plugin2,plugin3'
+            r.main(self.create_args + [ '--plugins', plugins ])
+
+            call_args = self.create_command.execute.call_args_list[0][1]
+            self.assertEquals(plugins.split(','), call_args["plugins"])
