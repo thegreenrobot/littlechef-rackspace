@@ -40,9 +40,6 @@ environment=preprod
 ```
 
 * `region`: Currently littlechef-rackspace supports Rackspace's Washington DC or Chicago datacenters (`dfw` or `ord`).
-* `public_key`: Public key used to authorize root SSH access
-* `private_key`: Private key used to authenticate as root to the newly created node
-* `environment`: Sets the `chef_environment` on a newly created node
 
 ### Putting Your Secrets in a Secrets File
 
@@ -69,16 +66,31 @@ fix-rackspace create \
     --public-key <public_key_file> \
     --private-key <private_key_file> \
     --runlist "role[web],recipe[security-updates]" \
-    --plugins "save_network,save_cloud"
+    --plugins "save_network,save_cloud" \
+    --hostname "test.example.com"
 ```
+
+### Arguments
+
+* `image`: Image to use (e.g. Ubuntu 12.04)
+* `flavor`: Flavor to use (e.g. 2GB, 4GB, 8GB)
+* `node-name`: Name of the newly created node in the Rackspace Cloud Control panel.  Also sets the initial
+  hostname.
+* `hostname`: Host name of the newly created node.  This only sets the name of created node JSON file.  You will
+  need to set up DNS and set the hostname on the machine yourself.
+* `public_key`: Public key used to authorize root SSH access
+* `private_key`: Private key used to authenticate as root to the newly created node
+* `environment`: Sets the `chef_environment` on a newly created node
+* `runlist`: Comma separated list of the Chef runlist to execute on the node.
+* `plugins`: Comma separated list of littlechef plugins.  Plugins are executed after chef deploy but
+  before your recipe run.  If your recipes depend on the `cloud` attribute being set, you can specify a custom
+  littlechef `save_cloud` plugin that uses ohai to save data to the node before your cookbooks are run.
+
+### Notes
 
 The server is created with your public key file in the `/root/.ssh/authorized_keys`.
 I highly recommended that you disable root password login as part of your chef
 recipes!
-
-Plugins are executed after chef deploy but before your recipe run, so for example,
-if your recipes depend on the `cloud` attribute being set, you can reference a custom
-littlechef `save_cloud` plugin that uses ohai to save data to the node.
 
 ## Rackspace List Images
 
