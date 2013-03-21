@@ -30,7 +30,7 @@ ssh-config = /home/dave/.ssh/config
 node_work_path = /tmp/chef-solo/
 
 [rackspace]
-secrets-file = secerets.cfg
+secrets-file = secrets.cfg
 image=5cebb13a-f783-4f8c-8058-c4182c724ccd
 flavor=2
 public_key=bootstrap.pub
@@ -46,14 +46,14 @@ environment=preprod
 
 ### Putting Your Secrets in a Secrets File
 
-You can specify a `secrets-file` in the `config.cfg` that contains your username and api key.  This allows you to
-check in common configuration (images, flavors) while not checking in secrets to your source control repository.
+You can specify a `secrets-file` in the `config.cfg` that contains your username and api key.  This allows
+your source repository to track common configuration (images, flavors) but not secrets.
 Here's an example `secrets.cfg` file:
 
 ```
 [DEFAULT]
-username=<your username>
-key=<your api key>
+username=myrackspaceusername
+key=myrackspaceapikey
 ```
 
 ## Rackspace Create
@@ -73,7 +73,7 @@ fix-rackspace create \
 ```
 
 The server is created with your public key file in the `/root/.ssh/authorized_keys`.
-It is HIGHLY recommended that you disable root password login as part of your chef
+I highly recommended that you disable root password login as part of your chef
 recipes!
 
 Plugins are executed after chef deploy but before your recipe run, so for example,
@@ -82,7 +82,7 @@ littlechef `save_cloud` plugin that uses ohai to save data to the node.
 
 ## Rackspace List Images
 
-List the images with your associated region.  Handy for NextGen servers (all uuids).
+List the images with your associated region.  Handy for finding the image you want to create.
 
 ```
 $ fix-rackspace list-images
