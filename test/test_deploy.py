@@ -27,20 +27,20 @@ class ChefDeployerTest(unittest.TestCase):
 
     def _get_deployer(self, key_filename):
         deployer = ChefDeployer(key_filename=key_filename,)
-        deployer._get_ohai_attrs_from_node = mock.Mock(return_value=self.ohai_data)
         deployer._create_bootstrap_ssh_config = mock.Mock()
 
         return deployer
 
     @mock.patch('littlechef_rackspace.deploy.lc')
     @mock.patch('littlechef_rackspace.deploy.littlechef')
-    def test_deploy_sets_fabric_user_and_key_filename(self, littlechef, lc):
+    def test_deploy_sets_fabric_settings(self, littlechef, lc):
         key_filename = "~/.ssh/bootstrap_rsa"
         deployer = self._get_deployer(key_filename=key_filename)
         deployer.deploy(self.host)
 
         self.assertEquals("root", lc.env.user)
-        self.assertEquals(key_filename, lc.env.key_filename)
+        self.assertEquals(self.host.get_host_string(), lc.env.host_string)
+        self.assertEquals(self.host.get_host_string(), lc.env.host)
 
     @mock.patch('littlechef_rackspace.deploy.lc')
     @mock.patch('littlechef_rackspace.deploy.littlechef')
@@ -125,7 +125,10 @@ Host test.example.com
 HostName 50.56.57.58
 """
 
-        deployer._create_bootstrap_ssh_config.assert_any_call("./.bootstrap-config", expected_ssh_config)
+        deployer._create_bootstrap_ssh_config.assert_any_call(
+            "./.bootstrap-config_{0}".format(self.host.get_host_string()),
+            expected_ssh_config
+        )
 
     @mock.patch('littlechef_rackspace.deploy.lc')
     @mock.patch('littlechef_rackspace.deploy.littlechef')
@@ -135,7 +138,8 @@ HostName 50.56.57.58
         deployer.deploy(self.host)
 
         self.assertTrue(lc.env.use_ssh_config)
-        self.assertEquals(lc.env.ssh_config_path, "./.bootstrap-config")
+        self.assertEquals(lc.env.ssh_config_path,
+                          "./.bootstrap-config_{0}".format(self.host.get_host_string()))
 
     @mock.patch('littlechef_rackspace.deploy.lc')
     @mock.patch('littlechef_rackspace.deploy.littlechef')
@@ -145,3 +149,30 @@ HostName 50.56.57.58
         deployer.deploy(self.host)
 
         lc.node.assert_any_call(self.host.host_string)
+
+    @mock.patch('littlechef_rackspace.deploy.lc')
+    @mock.patch('littlechef_rackspace.deploy.littlechef')
+    def test_deploy_with_plugins_executes_plugins_on_node(self, littlechef, lc):
+        deployer = self._get_deployer(key_filename="~/.ssh/id_rsa")
+
+        plugin = mock.Mock()
+        littlechef.lib.import_plugin.return_value = plugin
+
+        node_data = {'predefined': [ 'values' ]}
+        littlechef.lib.get_node.return_value = node_data
+
+        deployer.deploy(self.host, plugins=['awesome_plugin'])
+
+        littlechef.lib.import_plugin.assert_any_call('awesome_plugin')
+        plugin.execute.assert_any_call(node_data)
+
+    @mock.patch('littlechef_rackspace.deploy.lc')
+    @mock.patch('littlechef_rackspace.deploy.littlechef')
+    def test_deploy_with_multiple_plugins(self, littlechef, lc):
+        deployer = self._get_deployer(key_filename="~/.ssh/id_rsa")
+
+        deployer.deploy(self.host, plugins=['plugin1', 'plugin2', 'plugin3'])
+
+        littlechef.lib.import_plugin.assert_any_call('plugin1')
+        littlechef.lib.import_plugin.assert_any_call('plugin2')
+        littlechef.lib.import_plugin.assert_any_call('plugin3')

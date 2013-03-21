@@ -12,3 +12,4 @@ rackspace.cfg
 *.egg-info/
 build/
 dist/
+.bootstrap-config*

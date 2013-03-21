@@ -9,33 +9,30 @@ class ChefDeployer(object):
     def __init__(self, key_filename):
         self.key_filename = key_filename
 
-    def deploy(self, host, runlist=None):
+    def deploy(self, host, runlist=None, plugins=None):
         runlist = runlist or []
+        plugins = plugins or []
 
+        self._setup_ssh_config(host)
         self._deploy_chef(host)
         self._save_node_data(host, runlist)
+        for plugin in plugins:
+            self._execute_plugin(host, plugin)
+
         self._bootstrap_node(host)
 
     def _deploy_chef(self, host):
         lc.env.user = "root"
-        lc.env.key_filename = self.key_filename
-        lc.env.host = host.ip_address
-        lc.env.host_string = host.ip_address
+        lc.env.host = host.get_host_string()
+        lc.env.host_string = host.get_host_string()
         lc.deploy_chef(ask="no")
 
     def _save_node_data(self, host, runlist):
         """
-        Save the runlist into the node data
+        Save the runlist and environment into the node data
         """
 
-        ohai = self._get_ohai_attrs_from_node(host)
-
         data = littlechef.lib.get_node(host.get_host_string())
-        data['cloud'] = ohai['cloud']
-        data['network'] = ohai['network']
-        data['hostname'] = ohai['hostname']
-        data['keys'] = ohai['keys']
-        data['ipaddress'] = host.ip_address
         if host.environment:
             data['chef_environment'] = host.environment
         if runlist:
@@ -43,15 +40,12 @@ class ChefDeployer(object):
 
         littlechef.chef.save_config(data, force=True)
 
-    def _get_ohai_attrs_from_node(self, host):
-        lc.env.host_string = host.ip_address
-        with hide('everything'):
-            ohai = json.loads(sudo("ohai"))
+    def _execute_plugin(self, host, plugin_name):
+        node = littlechef.lib.get_node(host.get_host_string())
+        plugin = littlechef.lib.import_plugin(plugin_name)
+        plugin.execute(node)
 
-        lc.env.host_string = host.get_host_string()
-        return ohai
-
-    def _bootstrap_node(self, host):
+    def _setup_ssh_config(self, host):
         """
         New servers are created with 'root' user and an authorized public key
         that is a pair for the private key specified by self.key_filename.
@@ -61,7 +55,7 @@ class ChefDeployer(object):
         # (for example, encrypted data bag secret)
         littlechef.runner._readconfig()
 
-        bootstrap_config_file = os.path.join(".", ".bootstrap-config")
+        bootstrap_config_file = os.path.join(".", ".bootstrap-config_{0}".format(host.get_host_string()))
         contents = ("User root\n"
                     "IdentityFile {key_filename}\n"
                     "StrictHostKeyChecking no\n"
@@ -75,6 +69,8 @@ class ChefDeployer(object):
         # Use the ssh config we've created
         lc.env.use_ssh_config = True
         lc.env.ssh_config_path = bootstrap_config_file
+
+    def _bootstrap_node(self, host):
         lc.node(host.get_host_string())
 
     def _create_bootstrap_ssh_config(self, bootstrap_config_file, contents):

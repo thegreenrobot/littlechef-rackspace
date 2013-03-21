@@ -33,14 +33,15 @@ class RackspaceCreateTest(unittest.TestCase):
         self.command.execute(node_name="something", image="imageId",
                              flavor="fileId", public_key_file=StringIO("whatever"))
 
-        self.deployer.deploy.assert_any_call(host=Host(), runlist=[])
+        self.deployer.deploy.assert_any_call(host=Host(), runlist=None, plugins=None)
 
     def test_deploys_to_host_with_hostname(self):
         self.command.execute(node_name="something", image="imageId",
                              flavor="fileId", public_key_file=StringIO("whatever"),
                              hostname="test.example.com")
 
-        self.deployer.deploy.assert_any_call(host=Host(host_string="test.example.com"), runlist=[])
+        self.deployer.deploy.assert_any_call(host=Host(host_string="test.example.com"),
+                                             runlist=None, plugins=None)
 
     def test_deploys_to_host_with_environment(self):
         self.command.execute(node_name="something", image="imageId",
@@ -50,15 +51,19 @@ class RackspaceCreateTest(unittest.TestCase):
         expected_host = Host()
         expected_host.environment = 'staging'
 
-        self.deployer.deploy.assert_any_call(host=expected_host, runlist=[])
+        self.deployer.deploy.assert_any_call(host=expected_host,
+                                             runlist=None, plugins=None)
 
-    def test_deploys_to_host_with_runlist(self):
+    def test_deploys_to_host_with_runlist_and_plugins(self):
         runlist = ["role[web]", "recipe[test]"]
+        plugins = ['plugin1', 'plugin2', 'plugin3']
+
         self.command.execute(node_name="something", image="imageId",
                              flavor="fileId", public_key_file=StringIO("whatever"),
-                             runlist=runlist)
+                             runlist=runlist, plugins=plugins)
 
-        self.deployer.deploy.assert_any_call(host=Host(), runlist=runlist)
+        self.deployer.deploy.assert_any_call(host=Host(),
+                                             runlist=runlist, plugins=plugins)
 
 class RackspaceListImagesTest(unittest.TestCase):
 
