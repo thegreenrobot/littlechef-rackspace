@@ -56,6 +56,9 @@ parser.add_option("-e", "--env", dest="environment",
 parser.add_option("-H", "--hostname", dest="hostname",
                   help="Hostname for newly created node (DNS will not be set up -- you must do this manually)",
                   default=None)
+parser.add_option("-p", "--plugins", dest="plugins",
+                  help="Plugins to execute after chef bootstrapping. e.g, 'save_cloud,save_hosts'",
+                  default=None)
 
 class Runner(object):
     def _read_littlechef_config(self):
@@ -152,6 +155,9 @@ class Runner(object):
 
         if args.get('runlist'):
             args['runlist'] = args['runlist'].split(',')
+
+        if args.get('plugins'):
+            args['plugins'] = args['plugins'].split(',')
 
         command.execute(**args)
 
