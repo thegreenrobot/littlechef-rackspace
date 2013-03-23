@@ -57,7 +57,10 @@ parser.add_option("-H", "--hostname", dest="hostname",
                   help="Hostname for newly created node (DNS will not be set up -- you must do this manually)",
                   default=None)
 parser.add_option("-p", "--plugins", dest="plugins",
-                  help="Plugins to execute after chef bootstrapping. e.g, 'save_cloud,save_hosts'",
+                  help="Plugins to execute after chef bootstrapping but before chef run e.g, 'save_cloud,save_hosts'",
+                  default=None)
+parser.add_option("-P", "--post-plugins", dest="post-plugins",
+                  help="Plugins to execute after chef run. e.g, 'mark_node_as_provisioned'",
                   default=None)
 
 class Runner(object):
@@ -158,6 +161,9 @@ class Runner(object):
 
         if args.get('plugins'):
             args['plugins'] = args['plugins'].split(',')
+
+        if args.get('post-plugins'):
+            args['post_plugins'] = args['post-plugins'].split(',')
 
         command.execute(**args)
 
