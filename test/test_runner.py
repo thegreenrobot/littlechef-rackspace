@@ -137,3 +137,13 @@ class RunnerTest(unittest.TestCase):
 
             call_args = self.create_command.execute.call_args_list[0][1]
             self.assertEquals(plugins.split(','), call_args["plugins"])
+
+    def test_create_with_postplugins_parses_postplugins_into_array(self):
+        with mock.patch.multiple("littlechef_rackspace.runner", RackspaceApi=self.api_class,
+                                 ChefDeployer=self.deploy_class, RackspaceCreate=self.create_class):
+            r = Runner(options={})
+            post_plugins = 'plugin1,plugin2,plugin3'
+            r.main(self.create_args + [ '--post-plugins', post_plugins ])
+
+            call_args = self.create_command.execute.call_args_list[0][1]
+            self.assertEquals(post_plugins.split(','), call_args["post_plugins"])

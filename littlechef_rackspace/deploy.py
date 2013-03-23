@@ -9,9 +9,10 @@ class ChefDeployer(object):
     def __init__(self, key_filename):
         self.key_filename = key_filename
 
-    def deploy(self, host, runlist=None, plugins=None):
+    def deploy(self, host, runlist=None, plugins=None, post_plugins=None):
         runlist = runlist or []
         plugins = plugins or []
+        post_plugins = post_plugins or []
 
         self._setup_ssh_config(host)
         self._deploy_chef(host)
@@ -20,6 +21,9 @@ class ChefDeployer(object):
             self._execute_plugin(host, plugin)
 
         self._bootstrap_node(host)
+
+        for plugin in post_plugins:
+            self._execute_plugin(host, plugin)
 
     def _deploy_chef(self, host):
         lc.env.user = "root"
@@ -43,6 +47,9 @@ class ChefDeployer(object):
     def _execute_plugin(self, host, plugin_name):
         node = littlechef.lib.get_node(host.get_host_string())
         plugin = littlechef.lib.import_plugin(plugin_name)
+        littlechef.lib.print_header("Executing plugin '{0}' on "
+                                    "{1}".format(plugin_name, lc.env.host_string))
+
         plugin.execute(node)
 
     def _setup_ssh_config(self, host):

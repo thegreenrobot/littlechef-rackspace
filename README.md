@@ -67,6 +67,7 @@ fix-rackspace create \
     --private-key <private_key_file> \
     --runlist "role[web],recipe[security-updates]" \
     --plugins "save_network,save_cloud" \
+    --post-plugins "mark_node_as_ready" \
     --hostname "test.example.com"
 ```
 
@@ -85,6 +86,8 @@ fix-rackspace create \
 * `plugins`: Comma separated list of littlechef plugins.  Plugins are executed after chef deploy but
   before your recipe run.  If your recipes depend on the `cloud` attribute being set, you can specify a custom
   littlechef `save_cloud` plugin that uses ohai to save data to the node before your cookbooks are run.
+* `post-plugins`: Comma separated list of littlechef plugins.  These plugins are executed after the initial
+  chef run.  They can be used to mark that a node is ready to go into rotation (for example).
 
 ### Notes
 

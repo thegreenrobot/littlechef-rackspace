@@ -157,7 +157,6 @@ HostName 50.56.57.58
 
         plugin = mock.Mock()
         littlechef.lib.import_plugin.return_value = plugin
-
         node_data = {'predefined': [ 'values' ]}
         littlechef.lib.get_node.return_value = node_data
 
@@ -165,6 +164,17 @@ HostName 50.56.57.58
 
         littlechef.lib.import_plugin.assert_any_call('awesome_plugin')
         plugin.execute.assert_any_call(node_data)
+
+    @mock.patch('littlechef_rackspace.deploy.lc')
+    @mock.patch('littlechef_rackspace.deploy.littlechef')
+    def test_deploy_with_plugin_prints_header(self, littlechef, lc):
+        deployer = self._get_deployer(key_filename="~/.ssh/id_rsa")
+
+        deployer.deploy(self.host, plugins=['plugin1'])
+
+        littlechef.lib.print_header.assert_any_call(
+            "Executing plugin '{0}' on {1}".format('plugin1', self.host.get_host_string())
+        )
 
     @mock.patch('littlechef_rackspace.deploy.lc')
     @mock.patch('littlechef_rackspace.deploy.littlechef')
@@ -176,3 +186,12 @@ HostName 50.56.57.58
         littlechef.lib.import_plugin.assert_any_call('plugin1')
         littlechef.lib.import_plugin.assert_any_call('plugin2')
         littlechef.lib.import_plugin.assert_any_call('plugin3')
+
+    @mock.patch('littlechef_rackspace.deploy.lc')
+    @mock.patch('littlechef_rackspace.deploy.littlechef')
+    def test_deploy_with_post_plugins(self, littlechef, lc):
+        deployer = self._get_deployer(key_filename="~/.ssh/id_rsa")
+
+        deployer.deploy(self.host, post_plugins=['postplugin'])
+
+        littlechef.lib.import_plugin.assert_any_call('postplugin')
