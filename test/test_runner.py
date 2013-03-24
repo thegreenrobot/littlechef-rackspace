@@ -1,4 +1,4 @@
-import unittest
+import unittest2 as unittest
 import mock
 from littlechef_rackspace.api import Regions, RackspaceApi
 from littlechef_rackspace.commands import RackspaceCreate, RackspaceListImages
@@ -49,12 +49,11 @@ class RunnerTest(unittest.TestCase):
     def test_list_images_fails_if_configuration_is_not_provided(self):
         with mock.patch.multiple("littlechef_rackspace.runner", RackspaceApi=self.api_class,
                                  ChefDeployer=self.deploy_class, RackspaceListImages=self.list_images_class,
-                                 abort=self.abort), \
-             self.assertRaises(AbortException):
-
-            r = Runner(options={})
-            r.main(["list-images"])
-            self.abort.assert_any_call(FailureMessages.NEED_API_KEY)
+                                 abort=self.abort):
+            with self.assertRaises(AbortException):
+                r = Runner(options={})
+                r.main(["list-images"])
+                self.abort.assert_any_call(FailureMessages.NEED_API_KEY)
 
     def test_list_images_instantiates_api(self):
         with mock.patch.multiple("littlechef_rackspace.runner", RackspaceApi=self.api_class,
@@ -77,21 +76,19 @@ class RunnerTest(unittest.TestCase):
 
     def test_create_fails_if_configuration_is_not_provided(self):
         r = Runner(options={})
-        with mock.patch.multiple('littlechef_rackspace.runner', abort=self.abort),\
-             self.assertRaises(AbortException):
-
-            r.main(["create"])
-            self.abort.assert_any_call(FailureMessages.NEED_API_KEY)
+        with mock.patch.multiple('littlechef_rackspace.runner', abort=self.abort):
+            with self.assertRaises(AbortException):
+                r.main(["create"])
+                self.abort.assert_any_call(FailureMessages.NEED_API_KEY)
 
 
     def test_create_fails_if_required_arguments_are_not_provided(self):
-        with mock.patch.multiple('littlechef_rackspace.runner', abort=self.abort),\
-            self.assertRaises(AbortException):
-
-            self.create_command.validate_args.return_value = False
-            r = Runner(options={})
-            r.main("create --username username --key deadbeef --region dfw".split(" "))
-            self.abort.assert_any_call(FailureMessages.MISSING_REQUIRED_ARGUMENTS)
+        with mock.patch.multiple('littlechef_rackspace.runner', abort=self.abort):
+            with self.assertRaises(AbortException):
+                self.create_command.validate_args.return_value = False
+                r = Runner(options={})
+                r.main("create --username username --key deadbeef --region dfw".split(" "))
+                self.abort.assert_any_call(FailureMessages.MISSING_REQUIRED_ARGUMENTS)
 
     def test_create_instantiates_api_and_deploy_with_default_private_key(self):
         with mock.patch.multiple("littlechef_rackspace.runner", RackspaceApi=self.api_class,
