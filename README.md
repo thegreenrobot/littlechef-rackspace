@@ -4,7 +4,9 @@
 
 Deploy chef to Rackspace Cloud Servers powered by OpenStack without a Chef Server.
 
-Replaces `knife rackspace` for users of LittleChef.  Built on top of the excellent libcloud and littlechef libraries.
+Replaces `knife rackspace` for users of LittleChef.
+
+Built on top of the excellent [libcloud](http://libcloud.org/) and [littlechef](https://github.com/tobami/littlechef) libraries.
 
 ## Installation Instructions
 
