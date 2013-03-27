@@ -53,6 +53,15 @@ class ChefDeployerTest(unittest.TestCase):
 
     @mock.patch('littlechef_rackspace.deploy.lc')
     @mock.patch('littlechef_rackspace.deploy.littlechef')
+    def test_deploy_does_not_call_deploys_chef_if_options_is_set(self, littlechef, lc):
+        deployer = self._get_deployer(key_filename="~/.ssh/id_rsa")
+
+        deployer.deploy(self.host, use_opscode_chef=False)
+
+        self.assertEquals(0, len(lc.deploy_chef.call_args_list))
+
+    @mock.patch('littlechef_rackspace.deploy.lc')
+    @mock.patch('littlechef_rackspace.deploy.littlechef')
     def test_deploy_with_no_runlist_calls_save_config(self, littlechef, lc):
         deployer = self._get_deployer(key_filename="~/.ssh/id_rsa")
 

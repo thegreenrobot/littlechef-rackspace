@@ -9,13 +9,16 @@ class ChefDeployer(object):
     def __init__(self, key_filename):
         self.key_filename = key_filename
 
-    def deploy(self, host, runlist=None, plugins=None, post_plugins=None):
+    def deploy(self, host, runlist=None, plugins=None, post_plugins=None,
+               use_opscode_chef=True, **kwargs):
         runlist = runlist or []
         plugins = plugins or []
         post_plugins = post_plugins or []
 
         self._setup_ssh_config(host)
-        self._deploy_chef(host)
+        if use_opscode_chef:
+            lc.deploy_chef(ask="no")
+
         self._save_node_data(host, runlist)
         for plugin in plugins:
             self._execute_plugin(host, plugin)
@@ -24,12 +27,6 @@ class ChefDeployer(object):
 
         for plugin in post_plugins:
             self._execute_plugin(host, plugin)
-
-    def _deploy_chef(self, host):
-        lc.env.user = "root"
-        lc.env.host = host.get_host_string()
-        lc.env.host_string = host.get_host_string()
-        lc.deploy_chef(ask="no")
 
     def _save_node_data(self, host, runlist):
         """
@@ -76,6 +73,11 @@ class ChefDeployer(object):
         # Use the ssh config we've created
         lc.env.use_ssh_config = True
         lc.env.ssh_config_path = bootstrap_config_file
+
+        # Setup ssh config
+        lc.env.user = "root"
+        lc.env.host = host.get_host_string()
+        lc.env.host_string = host.get_host_string()
 
     def _bootstrap_node(self, host):
         lc.node(host.get_host_string())
