@@ -144,3 +144,39 @@ class RunnerTest(unittest.TestCase):
 
             call_args = self.create_command.execute.call_args_list[0][1]
             self.assertEquals(post_plugins.split(','), call_args["post_plugins"])
+
+    def test_create_with_skip_opscode_chef_to_false(self):
+        with mock.patch.multiple("littlechef_rackspace.runner", RackspaceApi=self.api_class,
+                                 ChefDeployer=self.deploy_class, RackspaceCreate=self.create_class):
+            r = Runner(options={})
+            r.main(self.create_args + [ '--skip-opscode-chef'])
+
+            call_args = self.create_command.execute.call_args_list[0][1]
+            self.assertEquals(False, call_args["use_opscode_chef"])
+
+    def test_create_without_skip_opscode_chef(self):
+        with mock.patch.multiple("littlechef_rackspace.runner", RackspaceApi=self.api_class,
+                                 ChefDeployer=self.deploy_class, RackspaceCreate=self.create_class):
+            r = Runner(options={})
+            r.main(self.create_args)
+
+            call_args = self.create_command.execute.call_args_list[0][1]
+            self.assertEquals(None, call_args.get("use_opscode_chef"))
+
+    def test_create_with_use_opscode_chef_to_false(self):
+        with mock.patch.multiple("littlechef_rackspace.runner", RackspaceApi=self.api_class,
+                                 ChefDeployer=self.deploy_class, RackspaceCreate=self.create_class):
+            r = Runner(options={})
+            r.main(self.create_args + [ '--use-opscode-chef', '0'])
+
+            call_args = self.create_command.execute.call_args_list[0][1]
+            self.assertEquals(False, call_args["use_opscode_chef"])
+
+    def test_create_with_use_opscode_chef_to_true(self):
+        with mock.patch.multiple("littlechef_rackspace.runner", RackspaceApi=self.api_class,
+                                 ChefDeployer=self.deploy_class, RackspaceCreate=self.create_class):
+            r = Runner(options={})
+            r.main(self.create_args + [ '--use-opscode-chef', '1'])
+
+            call_args = self.create_command.execute.call_args_list[0][1]
+            self.assertEquals(True, call_args.get("use_opscode_chef"))

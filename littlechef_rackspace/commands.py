@@ -25,8 +25,7 @@ class RackspaceCreate(Command):
         super(RackspaceCreate, self).__init__(rackspace_api)
         self.chef_deploy = chef_deployer
 
-    def execute(self, node_name, flavor, image, public_key_file, runlist=None, plugins=None,
-                post_plugins=None, environment=None, hostname=None, **kwargs):
+    def execute(self, node_name, flavor, image, public_key_file, environment=None, hostname=None, **kwargs):
         host = self.rackspace_api.create_node(node_name=node_name, flavor=flavor,
                                               image=image, public_key_file=public_key_file,
                                               progress=sys.stderr)
@@ -35,8 +34,7 @@ class RackspaceCreate(Command):
         if hostname:
             host.host_string = hostname
 
-        self.chef_deploy.deploy(host=host, runlist=runlist, plugins=plugins,
-                                post_plugins=post_plugins)
+        self.chef_deploy.deploy(host=host, **kwargs)
 
     def validate_args(self, **kwargs):
         required_args = ["node_name", "flavor", "image"]

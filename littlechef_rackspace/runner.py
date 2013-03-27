@@ -62,6 +62,10 @@ parser.add_option("-p", "--plugins", dest="plugins",
 parser.add_option("-P", "--post-plugins", dest="post-plugins",
                   help="Plugins to execute after chef run. e.g, 'mark_node_as_provisioned'",
                   default=None)
+parser.add_option("--skip-opscode-chef", action="store_false", dest="use-opscode-chef")
+parser.add_option("--use-opscode-chef", type="int", dest="use-opscode-chef",
+                  help="Integer argument with whether or not to use the OpsCode Chef repositorities (installed with 'fix deploy_chef')",
+                  default=None)
 
 class Runner(object):
     def _read_littlechef_config(self):
@@ -133,7 +137,7 @@ class Runner(object):
             raise InvalidCommand
 
         for k, v in vars(options).items():
-            if v:
+            if v is not None and v != '':
                 self.options[k] = v
 
         command_class = matched_commands[0]
@@ -164,6 +168,11 @@ class Runner(object):
 
         if args.get('post-plugins'):
             args['post_plugins'] = args['post-plugins'].split(',')
+
+        args['use_opscode_chef'] = args.get('use-opscode-chef')
+        if args.get('use_opscode_chef') is not None:
+            print args.get('use_opscode_chef')
+            args['use_opscode_chef'] = bool(args['use_opscode_chef'])
 
         command.execute(**args)
 
