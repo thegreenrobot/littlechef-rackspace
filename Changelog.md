@@ -1,3 +1,9 @@
+## 0.4 (2013-03-27)
+
+* Python 2.6 support
+* --skip-opscode-chef and --use-opscode-chef options to allow not using
+  Opscode Chef Repositories on newly bootstrapped nodes
+
 ## 0.3 (2013-03-24)
 
 * --hostname to create node file with specified hostname
