@@ -91,6 +91,9 @@ fix-rackspace create \
   littlechef `save_cloud` plugin that uses ohai to save data to the node before your cookbooks are run.
 * `post-plugins`: Comma separated list of littlechef plugins.  These plugins are executed after the initial
   chef run.  They can be used to mark that a node is ready to go into rotation (for example).
+* `skip-opscode-chef`: Don't run `deploy_chef` to install chef with opscode packages (only on command line)
+* `use-opscode-chef`: '0' or '1' based on whether to run `deploy_chef` after initial node startup (defaults to 1).
+  Useful when you are installing your own chef packages through a plugin.
 
 ### Notes
 

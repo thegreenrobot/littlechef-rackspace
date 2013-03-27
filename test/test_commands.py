@@ -29,21 +29,29 @@ class RackspaceCreateTest(unittest.TestCase):
                                              flavor=flavor, public_key_file=public_key_file,
                                              progress=sys.stderr)
 
-    def test_deploys_to_host_without_runlist(self):
+    def test_deploys_to_host_with_kwargs(self):
+        kwargs = {
+            'runlist': ['role[web]', 'recipe[test'],
+            'plugins': 'bootstrap',
+            'post_plugins': 'all_done'
+        }
         self.command.execute(node_name="something", image="imageId",
-                             flavor="fileId", public_key_file=StringIO("whatever"))
+                             flavor="fileId", public_key_file=StringIO("whatever"),
+                             **kwargs)
 
-        self.deployer.deploy.assert_any_call(host=Host(), runlist=None, plugins=None,
-                                             post_plugins=None)
+        expected_args = {
+            'host': Host()
+        }
+        expected_args.update(kwargs)
+
+        self.deployer.deploy.assert_any_call(**expected_args)
 
     def test_deploys_to_host_with_hostname(self):
         self.command.execute(node_name="something", image="imageId",
                              flavor="fileId", public_key_file=StringIO("whatever"),
                              hostname="test.example.com")
 
-        self.deployer.deploy.assert_any_call(host=Host(host_string="test.example.com"),
-                                             runlist=None, plugins=None,
-                                             post_plugins=None)
+        self.deployer.deploy.assert_any_call(host=Host(host_string="test.example.com"))
 
     def test_deploys_to_host_with_environment(self):
         self.command.execute(node_name="something", image="imageId",
@@ -53,32 +61,7 @@ class RackspaceCreateTest(unittest.TestCase):
         expected_host = Host()
         expected_host.environment = 'staging'
 
-        self.deployer.deploy.assert_any_call(host=expected_host,
-                                             runlist=None, plugins=None,
-                                             post_plugins=None)
-
-    def test_deploys_to_host_with_runlist_and_plugins(self):
-        runlist = ["role[web]", "recipe[test]"]
-        plugins = ['plugin1', 'plugin2', 'plugin3']
-
-        self.command.execute(node_name="something", image="imageId",
-                             flavor="fileId", public_key_file=StringIO("whatever"),
-                             runlist=runlist, plugins=plugins)
-
-        self.deployer.deploy.assert_any_call(host=Host(),
-                                             runlist=runlist, plugins=plugins,
-                                             post_plugins=None)
-
-    def test_deploys_to_host_with_post_plugins(self):
-        post_plugins = ['plugin1', 'plugin2', 'plugin3']
-
-        self.command.execute(node_name="something", image="imageId",
-                             flavor="fileId", public_key_file=StringIO("whatever"),
-                             post_plugins=post_plugins)
-
-        self.deployer.deploy.assert_any_call(host=Host(),
-                                             runlist=None, plugins=None,
-                                             post_plugins=post_plugins)
+        self.deployer.deploy.assert_any_call(host=expected_host)
 
 class RackspaceListImagesTest(unittest.TestCase):
 
