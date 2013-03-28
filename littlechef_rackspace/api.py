@@ -29,6 +29,12 @@ class RackspaceApi(object):
         return [{ "id": image.id, "name": image.name}
                 for image in conn.list_images()]
 
+    def list_networks(self):
+        conn = self._get_conn()
+
+        return [{ "id": network.id, "name": network.name, "cidr": network.cidr }
+                for network in conn.ex_list_networks()]
+
     def list_flavors(self):
         conn = self._get_conn()
 

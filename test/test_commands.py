@@ -3,7 +3,7 @@ import unittest
 import mock
 import sys
 from littlechef_rackspace.api import RackspaceApi
-from littlechef_rackspace.commands import RackspaceCreate, RackspaceListImages, RackspaceListFlavors
+from littlechef_rackspace.commands import RackspaceCreate, RackspaceListImages, RackspaceListFlavors, RackspaceListNetworks
 from littlechef_rackspace.deploy import ChefDeployer
 from littlechef_rackspace.lib import Host
 
@@ -100,3 +100,25 @@ class RackspaceListFlavorsTest(unittest.TestCase):
                               '{0}{1}'.format(flavor1['id'].ljust(10), flavor1['name']),
                               '{0}{1}'.format(flavor2['id'].ljust(10), flavor2['name'])
                           ], progress.getvalue().splitlines())
+
+
+class RackspaceListNetworksTest(unittest.TestCase):
+
+    def setUp(self):
+        self.api = mock.Mock(spec=RackspaceApi)
+        self.command = RackspaceListNetworks(rackspace_api=self.api)
+
+    def test_outputs_networks(self):
+        progress = StringIO()
+        network1 = { 'id': '0', 'name': 'PublicNet', 'cidr': None }
+        network2 = { 'id': '1', 'name': 'My Test Network', 'cidr': '192.168.0.0/20' }
+        network3 = { 'id': '2', 'name': 'ServiceNet', 'cidr': '10.0.0.0/20' }
+        self.api.list_networks.return_value = [ network1, network2, network3 ]
+
+        self.command.execute(progress=progress)
+
+        self.assertEquals([
+            '{0}{1}{2}'.format(network1['id'].ljust(36 + 5), "--".ljust(20), network1['name']),
+            '{0}{1}{2}'.format(network2['id'].ljust(36 + 5), network2['cidr'].ljust(20), network2['name']),
+            '{0}{1}{2}'.format(network3['id'].ljust(36 + 5), network3['cidr'].ljust(20), network3['name'])
+        ], progress.getvalue().splitlines())

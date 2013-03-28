@@ -2,6 +2,8 @@ from StringIO import StringIO
 import unittest
 from libcloud.compute.base import NodeImage, Node, NodeSize
 from libcloud.compute.types import Provider, NodeState
+from libcloud.compute.drivers.openstack import OpenStackNetwork
+
 import mock
 from littlechef_rackspace.api import RackspaceApi, Regions
 from littlechef_rackspace.lib import Host
@@ -81,6 +83,18 @@ class RackspaceApiTest(unittest.TestCase):
                                'id': lc_size2.id,
                                'name': lc_size2.name
                            }], api.list_flavors())
+
+    def test_list_networks_returns_network_information(self):
+        conn = mock.Mock()
+        api = self._get_api_with_mocked_conn(conn)
+
+        network1 = OpenStackNetwork(id="abcdef", cidr="192.168.0.0/16",
+                                    name="awesome network",
+                                    driver=None)
+        conn.ex_list_networks.return_value = [network1]
+
+        self.assertEquals([{ 'id': network1.id, 'name': network1.name, 'cidr': network1.cidr }],
+                          api.list_networks())
 
     def test_creates_node(self):
         conn = mock.Mock()

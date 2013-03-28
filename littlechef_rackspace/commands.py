@@ -65,3 +65,18 @@ class RackspaceListFlavors(Command):
         flavors = self.rackspace_api.list_flavors()
         for flavor in flavors:
             progress.write('{0}{1}\n'.format(flavor['id'].ljust(10), flavor['name']))
+
+class RackspaceListNetworks(Command):
+
+    name = "list-networks"
+    description = "List available networks for a Cloud Servers endpoint"
+    requires_api = True
+
+    def execute(self, progress=sys.stderr, **kwargs):
+        networks = self.rackspace_api.list_networks()
+
+        for network in networks:
+            cidr = network['cidr'] or '--'
+            progress.write('{0}{1}{2}\n'.format(network['id'].ljust(41),
+                                                cidr.ljust(20),
+                                                network['name']))
