@@ -27,6 +27,7 @@ class RackspaceCreateTest(unittest.TestCase):
 
         self.api.create_node.assert_any_call(node_name=node_name, image=image,
                                              flavor=flavor, public_key_file=public_key_file,
+                                             networks=None,
                                              progress=sys.stderr)
 
     def test_deploys_to_host_with_kwargs(self):

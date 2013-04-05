@@ -119,6 +119,26 @@ class RackspaceApiTest(unittest.TestCase):
         self.assertEquals({"/root/.ssh/authorized_keys": public_key},
                           call_kwargs['ex_files'])
 
+    def test_creates_node_with_networks(self):
+        conn = mock.Mock()
+        api = self._get_api_with_mocked_conn(conn)
+        network_id_list = ['id1', 'id2', 'id3']
+        conn.create_node.return_value = self.active_node
+
+        api.create_node(node_name="some name",
+                        image="some image",
+                        flavor="some flavor",
+                        public_key_file=StringIO("some public key"),
+                        networks=network_id_list)
+
+        call_kwargs = conn.create_node.call_args_list[0][1]
+        networks_kwarg = call_kwargs['networks']
+        for network in networks_kwarg:
+            self.assertIsInstance(network, OpenStackNetwork)
+
+        self.assertEquals(network_id_list,
+                          [network.id for network in networks_kwarg])
+
     def test_waits_for_node_to_become_active(self):
         conn = mock.Mock()
         api = self._get_api_with_mocked_conn(conn)

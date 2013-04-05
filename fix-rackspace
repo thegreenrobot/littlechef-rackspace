@@ -9,8 +9,8 @@ if __name__ == "__main__":
     except MissingRequiredArguments:
         print "Not all arguments for command provided"
         parser.print_help()
-    except InvalidConfiguration:
-        print "Could not determine API configuration: must specify username, api key, and region"
+    except InvalidConfiguration as e:
+        print e.message
         parser.print_help()
     except InvalidCommand:
         print "Invalid command specified"

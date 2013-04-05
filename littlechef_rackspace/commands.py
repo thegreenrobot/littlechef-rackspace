@@ -25,9 +25,10 @@ class RackspaceCreate(Command):
         super(RackspaceCreate, self).__init__(rackspace_api)
         self.chef_deploy = chef_deployer
 
-    def execute(self, node_name, flavor, image, public_key_file, environment=None, hostname=None, **kwargs):
+    def execute(self, node_name, flavor, image, public_key_file, environment=None, hostname=None, networks=None, **kwargs):
         host = self.rackspace_api.create_node(node_name=node_name, flavor=flavor,
                                               image=image, public_key_file=public_key_file,
+                                              networks=networks,
                                               progress=sys.stderr)
         if environment:
             host.environment = environment

@@ -180,3 +180,24 @@ class RunnerTest(unittest.TestCase):
 
             call_args = self.create_command.execute.call_args_list[0][1]
             self.assertEquals(True, call_args.get("use_opscode_chef"))
+
+    def test_create_with_networks_without_publicnet_raises_exception(self):
+        with mock.patch.multiple("littlechef_rackspace.runner", RackspaceApi=self.api_class,
+                                 ChefDeployer=self.deploy_class, RackspaceCreate=self.create_class):
+            r = Runner(options={})
+            with self.assertRaises(InvalidConfiguration) as cm:
+                r.main(self.create_args + [ '--networks', 'abcdefg'])
+
+            self.assertEquals('Must specify PublicNet in networks list (id=00000000-0000-0000-0000-000000000000)',
+                              cm.exception.message)
+
+    def test_create_with_networks_passes_networks(self):
+        with mock.patch.multiple("littlechef_rackspace.runner", RackspaceApi=self.api_class,
+                                 ChefDeployer=self.deploy_class, RackspaceCreate=self.create_class):
+            r = Runner(options={})
+            public_net_id = '00000000-0000-0000-0000-000000000000'
+            custom_net_id= '45e8b288-3a98-4092-a3e8-37e2a540d004'
+            r.main(self.create_args + [ '--networks', '{0},{1}'.format(public_net_id, custom_net_id)])
+
+            call_args = self.create_command.execute.call_args_list[0][1]
+            self.assertEquals([public_net_id, custom_net_id], call_args.get('networks'))
