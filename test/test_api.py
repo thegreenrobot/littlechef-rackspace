@@ -1,5 +1,5 @@
 from StringIO import StringIO
-import unittest
+import unittest2 as unittest
 from libcloud.compute.base import NodeImage, Node, NodeSize
 from libcloud.compute.types import Provider, NodeState
 from libcloud.compute.drivers.openstack import OpenStackNetwork

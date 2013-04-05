@@ -181,6 +181,15 @@ class RunnerTest(unittest.TestCase):
             call_args = self.create_command.execute.call_args_list[0][1]
             self.assertEquals(True, call_args.get("use_opscode_chef"))
 
+    def test_create_with_use_opscode_chef_not_specified(self):
+        with mock.patch.multiple("littlechef_rackspace.runner", RackspaceApi=self.api_class,
+                                 ChefDeployer=self.deploy_class, RackspaceCreate=self.create_class):
+            r = Runner(options={})
+            r.main(self.create_args)
+
+            call_args = self.create_command.execute.call_args_list[0][1]
+            self.assertFalse("use_opscode_chef" in call_args)
+
     def test_create_with_networks_without_publicnet_raises_exception(self):
         with mock.patch.multiple("littlechef_rackspace.runner", RackspaceApi=self.api_class,
                                  ChefDeployer=self.deploy_class, RackspaceCreate=self.create_class):

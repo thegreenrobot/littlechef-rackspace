@@ -176,9 +176,8 @@ class Runner(object):
         if args.get('post-plugins'):
             args['post_plugins'] = args['post-plugins'].split(',')
 
-        args['use_opscode_chef'] = args.get('use-opscode-chef')
-        if args.get('use_opscode_chef') is not None:
-            args['use_opscode_chef'] = bool(args['use_opscode_chef'])
+        if 'use-opscode-chef' in args:
+            args['use_opscode_chef'] = bool(args['use-opscode-chef'])
 
         if args.get('networks'):
             networks = args.get('networks').split(',')

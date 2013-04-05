@@ -1,5 +1,5 @@
 from StringIO import StringIO
-import unittest
+import unittest2 as unittest
 import mock
 import sys
 from littlechef_rackspace.api import RackspaceApi

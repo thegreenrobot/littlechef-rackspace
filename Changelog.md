@@ -1,3 +1,10 @@
+## 0.5 (2013-04-05)
+
+* list-networks command to view custom networks on your account
+* create command now takes a networks list
+* Fixed regression introduced in 0.4 where not specifying opscode
+  Chef would not deploy chef on new nodes
+
 ## 0.4 (2013-03-27)
 
 * Python 2.6 support
