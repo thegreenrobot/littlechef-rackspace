@@ -1,7 +1,9 @@
 from StringIO import StringIO
-import unittest
+import unittest2 as unittest
 from libcloud.compute.base import NodeImage, Node, NodeSize
 from libcloud.compute.types import Provider, NodeState
+from libcloud.compute.drivers.openstack import OpenStackNetwork
+
 import mock
 from littlechef_rackspace.api import RackspaceApi, Regions
 from littlechef_rackspace.lib import Host
@@ -82,6 +84,18 @@ class RackspaceApiTest(unittest.TestCase):
                                'name': lc_size2.name
                            }], api.list_flavors())
 
+    def test_list_networks_returns_network_information(self):
+        conn = mock.Mock()
+        api = self._get_api_with_mocked_conn(conn)
+
+        network1 = OpenStackNetwork(id="abcdef", cidr="192.168.0.0/16",
+                                    name="awesome network",
+                                    driver=None)
+        conn.ex_list_networks.return_value = [network1]
+
+        self.assertEquals([{ 'id': network1.id, 'name': network1.name, 'cidr': network1.cidr }],
+                          api.list_networks())
+
     def test_creates_node(self):
         conn = mock.Mock()
         api = self._get_api_with_mocked_conn(conn)
@@ -104,6 +118,26 @@ class RackspaceApiTest(unittest.TestCase):
         self.assertEquals(flavor_id, call_kwargs['size'].id)
         self.assertEquals({"/root/.ssh/authorized_keys": public_key},
                           call_kwargs['ex_files'])
+
+    def test_creates_node_with_networks(self):
+        conn = mock.Mock()
+        api = self._get_api_with_mocked_conn(conn)
+        network_id_list = ['id1', 'id2', 'id3']
+        conn.create_node.return_value = self.active_node
+
+        api.create_node(node_name="some name",
+                        image="some image",
+                        flavor="some flavor",
+                        public_key_file=StringIO("some public key"),
+                        networks=network_id_list)
+
+        call_kwargs = conn.create_node.call_args_list[0][1]
+        networks_kwarg = call_kwargs['networks']
+        for network in networks_kwarg:
+            self.assertIsInstance(network, OpenStackNetwork)
+
+        self.assertEquals(network_id_list,
+                          [network.id for network in networks_kwarg])
 
     def test_waits_for_node_to_become_active(self):
         conn = mock.Mock()

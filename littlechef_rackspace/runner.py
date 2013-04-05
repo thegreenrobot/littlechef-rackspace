@@ -5,12 +5,14 @@ from fabric.utils import abort
 import littlechef
 from api import RackspaceApi, Regions
 from deploy import ChefDeployer
-from commands import RackspaceCreate, RackspaceListImages, RackspaceListFlavors
+from commands import RackspaceCreate, RackspaceListImages, RackspaceListFlavors, RackspaceListNetworks
+
 
 def get_command_classes():
     return [RackspaceCreate,
             RackspaceListImages,
-            RackspaceListFlavors]
+            RackspaceListFlavors,
+            RackspaceListNetworks]
 
 
 class FailureMessages:
@@ -19,6 +21,8 @@ class FailureMessages:
                     'or in [rackspace] configuration section of config.cfg')
 
     MISSING_REQUIRED_ARGUMENTS = "Missing required arguments"
+
+    MUST_SPECIFY_PUBLICNET = 'Must specify PublicNet in networks list (id=00000000-0000-0000-0000-000000000000)'
 
 
 class RackspaceOptionParser(OptionParser):
@@ -65,6 +69,9 @@ parser.add_option("-P", "--post-plugins", dest="post-plugins",
 parser.add_option("--skip-opscode-chef", action="store_false", dest="use-opscode-chef")
 parser.add_option("--use-opscode-chef", type="int", dest="use-opscode-chef",
                   help="Integer argument with whether or not to use the OpsCode Chef repositorities (installed with 'fix deploy_chef')",
+                  default=None)
+parser.add_option("-n", "--networks", dest="networks",
+                  help="Comma separated list of network ids to create node with (PublicNet is required)",
                   default=None)
 
 class Runner(object):
@@ -169,10 +176,15 @@ class Runner(object):
         if args.get('post-plugins'):
             args['post_plugins'] = args['post-plugins'].split(',')
 
-        args['use_opscode_chef'] = args.get('use-opscode-chef')
-        if args.get('use_opscode_chef') is not None:
-            print args.get('use_opscode_chef')
-            args['use_opscode_chef'] = bool(args['use_opscode_chef'])
+        if 'use-opscode-chef' in args:
+            args['use_opscode_chef'] = bool(args['use-opscode-chef'])
+
+        if args.get('networks'):
+            networks = args.get('networks').split(',')
+            if '00000000-0000-0000-0000-000000000000' not in networks:
+                raise InvalidConfiguration(FailureMessages.MUST_SPECIFY_PUBLICNET)
+
+            args['networks'] = networks
 
         command.execute(**args)
 

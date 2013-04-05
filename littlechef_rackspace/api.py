@@ -1,4 +1,5 @@
 from libcloud.compute.base import NodeImage, NodeSize
+from libcloud.compute.drivers.openstack import OpenStackNetwork
 from libcloud.compute.providers import get_driver
 from libcloud.compute.types import Provider, NodeState
 import time
@@ -29,13 +30,24 @@ class RackspaceApi(object):
         return [{ "id": image.id, "name": image.name}
                 for image in conn.list_images()]
 
+    def list_networks(self):
+        conn = self._get_conn()
+
+        return [{ "id": network.id, "name": network.name, "cidr": network.cidr }
+                for network in conn.ex_list_networks()]
+
     def list_flavors(self):
         conn = self._get_conn()
 
         return [{ "id": size.id, "name": size.name}
                 for size in conn.list_sizes()]
 
-    def create_node(self, image, flavor, node_name, public_key_file, progress=None):
+    def create_node(self, image, flavor, node_name, public_key_file, networks=None, progress=None):
+        create_kwargs = {}
+        if networks:
+            fake_networks = [OpenStackNetwork(n, None, None, self) for n in networks]
+            create_kwargs['networks'] = fake_networks
+
         conn = self._get_conn()
         fake_image = NodeImage(id=image, name=None, driver=conn)
         fake_flavor = NodeSize(id=flavor, name=None, ram=None, disk=None,
@@ -47,7 +59,8 @@ class RackspaceApi(object):
         node = conn.create_node(name=node_name, image=fake_image,
                          size=fake_flavor, ex_files={
                              "/root/.ssh/authorized_keys": public_key_file.read()
-                         })
+                         },
+                         **create_kwargs)
         password = node.extra.get("password")
 
         if progress:

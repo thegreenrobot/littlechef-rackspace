@@ -1,5 +1,4 @@
-from StringIO import StringIO
-import unittest
+import unittest2 as unittest
 import mock
 from littlechef_rackspace.lib import Host
 from littlechef_rackspace.deploy import ChefDeployer
