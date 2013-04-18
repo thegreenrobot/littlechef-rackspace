@@ -126,3 +126,20 @@ $ fix-rackspace list-flavors
 7         15GB Standard Instance
 8         30GB Standard Instance
 ```
+
+## Tips for OS X
+
+Mac users will most likely encounter the following libcloud error:
+
+```
+No CA Certificates were found in CA_CERTS_PATH
+```
+
+This can be remedied by executing the following:
+
+```
+$ brew install curl-ca-bundle
+$ export SSL_CERT_FILE=/usr/local/opt/curl-ca-bundle/share/ca-bundle.crt
+```
+
+More information about this error can be found at [libcloud.apache.org](http://libcloud.apache.org/docs/ssl-certificate-validation.html)
