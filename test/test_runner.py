@@ -34,7 +34,10 @@ class RunnerTest(unittest.TestCase):
 
         # Dumb hacks using README.md as a public key because you can't mock out a file() call
         self.create_args = "create --flavor 2 --image 123 --node-name test-node --username username --key deadbeef --region dfw --public-key README.md".split(' ')
-        self.list_images_args = "list-images --username username --key deadbeef --region dfw --public-key README.md".split(' ')
+
+        list_images_command_string = "list-images --username username --key deadbeef --region REGION --public-key README.md"
+        self.dfw_list_images_args = list_images_command_string.replace('REGION', 'dfw').split(' ')
+        self.syd_list_images_args = list_images_command_string.replace('REGION', 'syd').split(' ')
 
     def test_must_specify_command(self):
         r = Runner(options={})
@@ -55,12 +58,19 @@ class RunnerTest(unittest.TestCase):
                 r.main(["list-images"])
                 self.abort.assert_any_call(FailureMessages.NEED_API_KEY)
 
-    def test_list_images_instantiates_api(self):
+    def test_list_images_with_dfw_region_instantiates_api(self):
         with mock.patch.multiple("littlechef_rackspace.runner", RackspaceApi=self.api_class,
                                  ChefDeployer=self.deploy_class, RackspaceListImages=self.list_images_class):
             r = Runner(options={})
-            r.main(self.list_images_args)
+            r.main(self.dfw_list_images_args)
             self.api_class.assert_any_call(username="username", key="deadbeef", region=Regions.DFW)
+
+    def test_list_images_with_syd_region_instantiates_api(self):
+        with mock.patch.multiple("littlechef_rackspace.runner", RackspaceApi=self.api_class,
+                                 ChefDeployer=self.deploy_class, RackspaceListImages=self.list_images_class):
+            r = Runner(options={})
+            r.main(self.syd_list_images_args)
+            self.api_class.assert_any_call(username="username", key="deadbeef", region=Regions.SYD)
 
     def test_uses_config_settings(self):
         with mock.patch.multiple("littlechef_rackspace.runner", RackspaceApi=self.api_class,
