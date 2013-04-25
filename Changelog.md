@@ -1,3 +1,8 @@
+## 0.6 (2013-04-25)
+
+* Support creating SYD resources (if your account has Sydney OpenStack
+  enabled)
+
 ## 0.5 (2013-04-05)
 
 * list-networks command to view custom networks on your account

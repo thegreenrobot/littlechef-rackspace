@@ -1,9 +1,25 @@
 from libcloud.compute.base import NodeImage, NodeSize
-from libcloud.compute.drivers.openstack import OpenStackNetwork
+from libcloud.compute.drivers.openstack import OpenStackNetwork, OpenStack_1_1_NodeDriver
+from libcloud.compute.drivers.rackspacenova import RackspaceNovaConnection
 from libcloud.compute.providers import get_driver
 from libcloud.compute.types import Provider, NodeState
 import time
 from lib import Host
+
+
+# Hacks to support Sydney connections
+class RackspaceNovaSydConnection(RackspaceNovaConnection):
+
+    get_endpoint_args = {'service_type': 'compute',
+                         'name': 'cloudServersOpenStack',
+                         'region': 'SYD'}
+
+
+class RackspaceNovaSydNodeDriver(OpenStack_1_1_NodeDriver):
+    name = 'RackspaceNovaSyd'
+    website = 'http://www.rackspace.com/'
+    connectionCls = RackspaceNovaSydConnection
+    api_name = 'rackspacenovaus'
 
 
 class RackspaceApi(object):
@@ -14,9 +30,15 @@ class RackspaceApi(object):
         self.region = region
 
     def _get_conn(self):
+        if self.region is Regions.SYD:
+            return RackspaceNovaSydNodeDriver(self.username, self.key,
+                                              ex_force_auth_url="https://identity.api.rackspacecloud.com/v2.0",
+                                              ex_force_auth_version="2.0")
+
         if self.region is Regions.DFW:
             provider = Provider.RACKSPACE_NOVA_DFW
         else:
+            provider = Provider.RACKSPACE_NOVA_DFW
             provider = Provider.RACKSPACE_NOVA_ORD
 
         Driver = get_driver(provider)
@@ -85,6 +107,8 @@ class RackspaceApi(object):
                     password=password)
 
 class Regions(object):
+
     NOT_FOUND = 0
     DFW = 1
     ORD = 2
+    SYD = 3
