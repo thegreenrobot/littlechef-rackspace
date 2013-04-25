@@ -45,6 +45,15 @@ class RackspaceApiTest(unittest.TestCase):
 
             get_driver.assert_any_call(Provider.RACKSPACE_NOVA_ORD)
 
+    def test_list_images_instantiates_syd_driver(self):
+        with mock.patch("littlechef_rackspace.api.RackspaceNovaSydNodeDriver") as SydDriver:
+            api = self._get_api(Regions.SYD)
+            api.list_images()
+
+            SydDriver.assert_any_call(self.username, self.key,
+                                      ex_force_auth_url="https://identity.api.rackspacecloud.com/v2.0",
+                                      ex_force_auth_version="2.0")
+
     def _get_api_with_mocked_conn(self, conn):
         api = self._get_api(Regions.ORD)
         api._get_conn = mock.Mock(return_value=conn)
