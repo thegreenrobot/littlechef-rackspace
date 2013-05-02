@@ -42,7 +42,7 @@ region=dfw
 environment=preprod
 ```
 
-* `region`: Currently littlechef-rackspace supports Rackspace's Washington DC or Chicago datacenters (`dfw` or `ord`).
+* `region`: Currently littlechef-rackspace supports Rackspace's Dallas Texas or Chicago IL datacenters (`dfw` or `ord`).
 
 ### Putting Your Secrets in a Secrets File
 
