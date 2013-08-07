@@ -34,11 +34,11 @@ class RackspaceApi(object):
             return RackspaceNovaSydNodeDriver(self.username, self.key,
                                               ex_force_auth_url="https://identity.api.rackspacecloud.com/v2.0",
                                               ex_force_auth_version="2.0")
-
         if self.region is Regions.DFW:
             provider = Provider.RACKSPACE_NOVA_DFW
+        elif self.region is Regions.LON:
+            provider = Provider.RACKSPACE_NOVA_LON
         else:
-            provider = Provider.RACKSPACE_NOVA_DFW
             provider = Provider.RACKSPACE_NOVA_ORD
 
         Driver = get_driver(provider)
@@ -112,3 +112,4 @@ class Regions(object):
     DFW = 1
     ORD = 2
     SYD = 3
+    LON = 4

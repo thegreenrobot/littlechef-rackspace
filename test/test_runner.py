@@ -37,6 +37,7 @@ class RunnerTest(unittest.TestCase):
 
         list_images_command_string = "list-images --username username --key deadbeef --region REGION --public-key README.md"
         self.dfw_list_images_args = list_images_command_string.replace('REGION', 'dfw').split(' ')
+        self.lon_list_images_args = list_images_command_string.replace('REGION', 'lon').split(' ')
         self.syd_list_images_args = list_images_command_string.replace('REGION', 'syd').split(' ')
 
     def test_must_specify_command(self):
@@ -64,6 +65,13 @@ class RunnerTest(unittest.TestCase):
             r = Runner(options={})
             r.main(self.dfw_list_images_args)
             self.api_class.assert_any_call(username="username", key="deadbeef", region=Regions.DFW)
+
+    def test_list_images_with_lon_region_instantiates_api(self):
+        with mock.patch.multiple("littlechef_rackspace.runner", RackspaceApi=self.api_class,
+                                 ChefDeployer=self.deploy_class, RackspaceListImages=self.list_images_class):
+            r = Runner(options={})
+            r.main(self.lon_list_images_args)
+            self.api_class.assert_any_call(username="username", key="deadbeef", region=Regions.LON)
 
     def test_list_images_with_syd_region_instantiates_api(self):
         with mock.patch.multiple("littlechef_rackspace.runner", RackspaceApi=self.api_class,
