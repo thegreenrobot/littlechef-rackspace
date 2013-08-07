@@ -120,6 +120,8 @@ class Runner(object):
             region = Regions.ORD
         elif region.lower() == 'syd':
             region = Regions.SYD
+        elif region.lower() == 'lon':
+            region = Regions.LON
         else:
             region = Regions.NOT_FOUND
 
