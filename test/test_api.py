@@ -45,6 +45,13 @@ class RackspaceApiTest(unittest.TestCase):
 
             get_driver.assert_any_call(Provider.RACKSPACE_NOVA_ORD)
 
+    def test_list_images_instantiates_lon_driver(self):
+        with mock.patch("littlechef_rackspace.api.get_driver") as get_driver:
+            api = self._get_api(Regions.LON)
+            api.list_images()
+
+            get_driver.assert_any_call(Provider.RACKSPACE_NOVA_LON)
+
     def test_list_images_instantiates_syd_driver(self):
         with mock.patch("littlechef_rackspace.api.RackspaceNovaSydNodeDriver") as SydDriver:
             api = self._get_api(Regions.SYD)
