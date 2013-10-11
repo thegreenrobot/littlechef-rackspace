@@ -88,6 +88,25 @@ class RackspaceApiTest(unittest.TestCase):
             }],
             api.list_flavors())
 
+    def test_list_servers_returns_server_information(self):
+        conn = mock.Mock()
+        api = self._get_api_with_mocked_conn(conn)
+
+        lc_node1 = Node('1', 'server1', None, ['50.50.50.50'], [], None)
+        lc_node2 = Node('2', 'server2', None, ['51.51.51.51'], [], None)
+
+        conn.list_nodes.return_value = [lc_node1, lc_node2]
+
+        self.assertEquals([{
+                               'id': lc_node1.id,
+                               'name': lc_node1.name,
+                               'public_ipv4': lc_node1.public_ips[0]
+                           }, {
+                               'id': lc_node2.id,
+                               'name': lc_node2.name,
+                               'public_ipv4': lc_node2.public_ips[0]
+                           }], api.list_servers())
+
     def test_list_networks_returns_network_information(self):
         conn = mock.Mock()
         api = self._get_api_with_mocked_conn(conn)

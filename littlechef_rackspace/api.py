@@ -35,6 +35,14 @@ class RackspaceApi(object):
         return [{"id": size.id, "name": size.name}
                 for size in conn.list_sizes()]
 
+    def list_servers(self):
+        conn = self._get_conn()
+
+        return [{ "id": server.id,
+                  "name": server.name,
+                  "public_ipv4": server.public_ips[0]}
+                for server in conn.list_nodes()]
+
     def create_node(self, image, flavor, name, public_key_file,
                     networks=None, progress=None):
         create_kwargs = {}

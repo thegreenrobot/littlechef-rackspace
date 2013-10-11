@@ -5,6 +5,7 @@ except ImportError:
     import json
 
 
+
 class Command(object):
 
     requires_api = False
@@ -81,6 +82,7 @@ class RackspaceListImages(Command):
                            image['name']))
 
 
+
 class RackspaceListFlavors(Command):
 
     name = "list-flavors"
@@ -92,6 +94,7 @@ class RackspaceListFlavors(Command):
         for flavor in flavors:
             progress.write('{0}{1}\n'.format(flavor['id'].ljust(20),
                            flavor['name']))
+
 
 
 class RackspaceListNetworks(Command):
@@ -108,3 +111,17 @@ class RackspaceListNetworks(Command):
             progress.write('{0}{1}{2}\n'.format(network['id'].ljust(41),
                                                 cidr.ljust(20),
                                                 network['name']))
+
+class RackspaceListServers(Command):
+
+    name = "list-servers"
+    description = "List servers for a region"
+    requires_api = True
+
+    def execute(self, progress=sys.stderr, **kwargs):
+        servers = self.rackspace_api.list_servers()
+
+        for server in servers:
+            progress.write('{0}{1}{2}\n'.format(server['id'].ljust(41),
+                                                server['name'].ljust(20),
+                                                server['public_ipv4']))
