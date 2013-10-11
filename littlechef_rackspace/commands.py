@@ -125,3 +125,19 @@ class RackspaceListServers(Command):
             progress.write('{0}{1}{2}\n'.format(server['id'].ljust(41),
                                                 server['name'].ljust(20),
                                                 server['public_ipv4']))
+
+
+class RackspaceRebuild(Command):
+
+    name = "create"
+    description = "Rebuild existing Cloud Server and bootstrap Chef"
+    requires_api = True
+    requires_deploy = True
+
+    def __init__(self, rackspace_api, chef_deployer):
+        super(RackspaceRebuild, self).__init__(rackspace_api)
+        self.chef_deploy = chef_deployer
+
+    def execute(self, server, flavor, image, public_key_file, environment=None, hostname=None, networks=None, **kwargs):
+        host = self.rackspace_api.rebuild_node(server=server, flavor=flavor, image=image, public_key_file=public_key_file,
+                                               networks=networks, progress=sys.stderr)

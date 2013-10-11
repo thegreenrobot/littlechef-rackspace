@@ -244,5 +244,16 @@ class RackspaceApiTest(unittest.TestCase):
                 "Node active! (host: {0})".format(host.ip_address)
             ], progress.getvalue().splitlines())
 
+    def test_rebuild_node_with_networks(self):
+        conn = mock.Mock()
+        api = self._get_api_with_mocked_conn(conn)
+        network_id_list = ['id1', 'id2', 'id3']
+        progress = StringIO()
+
+        api.rebuild_node(server='server-id', flavor='flavor-id', image='image-id',
+                         public_key_file=StringIO("some public key"),
+                         networks=network_id_list,
+                         progress=progress)
+
     def _get_api(self, region):
         return RackspaceApi(self.username, self.key, region)

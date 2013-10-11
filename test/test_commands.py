@@ -5,7 +5,7 @@ import sys
 from littlechef_rackspace.api import RackspaceApi
 from littlechef_rackspace.commands import (RackspaceCreate, RackspaceListImages,
                                            RackspaceListFlavors, RackspaceListNetworks,
-                                           RackspaceListServers)
+                                           RackspaceListServers, RackspaceRebuild)
 from littlechef_rackspace.deploy import ChefDeployer
 from littlechef_rackspace.lib import Host
 
@@ -208,3 +208,27 @@ class RackspaceListServersTest(unittest.TestCase):
             '{0}{1}{2}'.format(server1['id'].ljust(36 + 5), server1['name'].ljust(20), server1['public_ipv4']),
             '{0}{1}{2}'.format(server2['id'].ljust(36 + 5), server2['name'].ljust(20), server2['public_ipv4']),
         ], progress.getvalue().splitlines())
+
+
+class RackspaceRebuildTest(unittest.TestCase):
+
+    def setUp(self):
+        self.api = mock.Mock(spec=RackspaceApi)
+        self.deployer = mock.Mock(spec=ChefDeployer)
+        self.command = RackspaceRebuild(rackspace_api=self.api,
+                                        chef_deployer=self.deployer)
+        self.api.rebuild_node.return_value = Host()
+
+    def test_rebuilds_server_with_api(self):
+        server = "server-with-uuid-1-2-3"
+        image = "imageId"
+        flavor = "flavorId"
+        public_key_file = StringIO("~/.ssh/id_rsa.pub")
+
+        self.command.execute(server=server, image=image,
+                             flavor=flavor, public_key_file=public_key_file)
+
+        self.api.rebuild_node.assert_any_call(server=server, image=image,
+                                              flavor=flavor, public_key_file=public_key_file,
+                                              networks=None,
+                                              progress=sys.stderr)
