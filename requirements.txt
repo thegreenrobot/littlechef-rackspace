@@ -1,5 +1,5 @@
 nose==1.2.1
 unittest2==0.5.1
 mock==1.0.1
-apache-libcloud>=0.12.0
+apache-libcloud==0.12.4
 littlechef==1.5.1
