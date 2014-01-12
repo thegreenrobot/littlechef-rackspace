@@ -98,8 +98,8 @@ class RackspaceListFlavorsTest(unittest.TestCase):
         self.command.execute(progress=progress)
 
         self.assertEquals([
-                              '{0}{1}'.format(flavor1['id'].ljust(10), flavor1['name']),
-                              '{0}{1}'.format(flavor2['id'].ljust(10), flavor2['name'])
+                              '{0}{1}'.format(flavor1['id'].ljust(20), flavor1['name']),
+                              '{0}{1}'.format(flavor2['id'].ljust(20), flavor2['name'])
                           ], progress.getvalue().splitlines())
 
 
