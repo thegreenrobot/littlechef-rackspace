@@ -65,7 +65,7 @@ class RackspaceListFlavors(Command):
     def execute(self, progress=sys.stderr, **kwargs):
         flavors = self.rackspace_api.list_flavors()
         for flavor in flavors:
-            progress.write('{0}{1}\n'.format(flavor['id'].ljust(10), flavor['name']))
+            progress.write('{0}{1}\n'.format(flavor['id'].ljust(20), flavor['name']))
 
 class RackspaceListNetworks(Command):
 
