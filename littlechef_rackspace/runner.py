@@ -1,8 +1,11 @@
-import ConfigParser
-import os
 from optparse import OptionParser
 from fabric.utils import abort
+
+import ConfigParser
+import os
 import littlechef
+import yaml
+
 from api import RackspaceApi
 from deploy import ChefDeployer
 from commands import RackspaceCreate, RackspaceListImages, RackspaceListFlavors, RackspaceListNetworks
@@ -30,11 +33,11 @@ class FailureMessages:
 class RackspaceOptionParser(OptionParser):
     def print_help(self, file=None):
         OptionParser.print_help(self, file)
-        print "\nAvailable commands:\n"
+        print("\nAvailable commands:\n")
         for command_class in get_command_classes():
-            print "   {0}\t{1}".format(command_class.name,
-                                       command_class.description)
-        print ""
+            print("   {0}\t{1}".format(command_class.name,
+                                       command_class.description))
+        print("")
 
 
 parser = RackspaceOptionParser()
@@ -81,13 +84,19 @@ class Runner(object):
             config = ConfigParser.SafeConfigParser()
             success = config.read(littlechef.CONFIGFILE)
             if success:
-                return dict(config.items('rackspace'))
+                if os.path.isfile("rackspace.yaml"):
+                    return yaml.load(file("rackspace.yaml"))
+                else:
+                    print("WARNING: Reading configuration from deprecated {0} file, consider "
+                          "upgrading to use rackspace.yaml".format(littlechef.CONFIGFILE))
+                    return dict(config.items('rackspace'))
+
             else:
                 abort("Could not read littlechef configuration file!  "
                       "Make sure you are running in a kitchen (fix new_kitchen).")
         except ConfigParser.ParsingError:
             pass
-        except ConfigParser.NoSectionError as e:
+        except ConfigParser.NoSectionError:
             pass
 
         return None
