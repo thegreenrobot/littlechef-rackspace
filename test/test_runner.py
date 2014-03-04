@@ -1,6 +1,6 @@
 import unittest2 as unittest
 import mock
-from littlechef_rackspace.api import Regions, RackspaceApi
+from littlechef_rackspace.api import RackspaceApi
 from littlechef_rackspace.commands import RackspaceCreate, RackspaceListImages
 from littlechef_rackspace.deploy import ChefDeployer
 from littlechef_rackspace.runner import Runner, MissingRequiredArguments, InvalidConfiguration, InvalidCommand, FailureMessages
@@ -64,21 +64,7 @@ class RunnerTest(unittest.TestCase):
                                  ChefDeployer=self.deploy_class, RackspaceListImages=self.list_images_class):
             r = Runner(options={})
             r.main(self.dfw_list_images_args)
-            self.api_class.assert_any_call(username="username", key="deadbeef", region=Regions.DFW)
-
-    def test_list_images_with_lon_region_instantiates_api(self):
-        with mock.patch.multiple("littlechef_rackspace.runner", RackspaceApi=self.api_class,
-                                 ChefDeployer=self.deploy_class, RackspaceListImages=self.list_images_class):
-            r = Runner(options={})
-            r.main(self.lon_list_images_args)
-            self.api_class.assert_any_call(username="username", key="deadbeef", region=Regions.LON)
-
-    def test_list_images_with_syd_region_instantiates_api(self):
-        with mock.patch.multiple("littlechef_rackspace.runner", RackspaceApi=self.api_class,
-                                 ChefDeployer=self.deploy_class, RackspaceListImages=self.list_images_class):
-            r = Runner(options={})
-            r.main(self.syd_list_images_args)
-            self.api_class.assert_any_call(username="username", key="deadbeef", region=Regions.SYD)
+            self.api_class.assert_any_call(username="username", key="deadbeef", region='dfw')
 
     def test_uses_config_settings(self):
         with mock.patch.multiple("littlechef_rackspace.runner", RackspaceApi=self.api_class,
@@ -90,7 +76,7 @@ class RunnerTest(unittest.TestCase):
             })
             # another dumb hack
             r.main(['list-images', '--public-key', 'README.md'])
-            self.api_class.assert_any_call(username="username", key="deadbeef", region=Regions.ORD)
+            self.api_class.assert_any_call(username="username", key="deadbeef", region='ord')
 
     def test_create_fails_if_configuration_is_not_provided(self):
         r = Runner(options={})
@@ -114,7 +100,7 @@ class RunnerTest(unittest.TestCase):
             r = Runner(options={})
             r.main(self.create_args)
 
-            self.api_class.assert_any_call(username="username", key="deadbeef", region=Regions.DFW)
+            self.api_class.assert_any_call(username="username", key="deadbeef", region='dfw')
             self.deploy_class.assert_any_call(key_filename="~/.ssh/id_rsa")
 
     def test_create_creates_node_with_specified_public_key(self):
