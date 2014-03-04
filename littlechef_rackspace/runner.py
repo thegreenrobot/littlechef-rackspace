@@ -3,7 +3,7 @@ import os
 from optparse import OptionParser
 from fabric.utils import abort
 import littlechef
-from api import RackspaceApi, Regions
+from api import RackspaceApi
 from deploy import ChefDeployer
 from commands import RackspaceCreate, RackspaceListImages, RackspaceListFlavors, RackspaceListNetworks
 
@@ -16,6 +16,8 @@ def get_command_classes():
 
 
 class FailureMessages:
+
+    INVALID_REGION = "Must specify a valid region ('dfw', 'ord', 'syd', 'lon', 'iad')."
 
     NEED_API_KEY = ('Must specify username, API key, and region on command line '
                     'or in [rackspace] configuration section of config.cfg')
@@ -113,20 +115,10 @@ class Runner(object):
     def get_api(self):
         username = self.options.get('username')
         key = self.options.get('key')
-        region = self.options.get('region', '')
-        if region.lower() == 'dfw':
-            region = Regions.DFW
-        elif region.lower() == 'ord':
-            region = Regions.ORD
-        elif region.lower() == 'syd':
-            region = Regions.SYD
-        elif region.lower() == 'lon':
-            region = Regions.LON
-        else:
-            region = Regions.NOT_FOUND
+        region = self.options.get('region', '').lower()
 
-        if not username or not key or not region:
-            abort(FailureMessages.NEED_API_KEY)
+        if region not in ['dfw', 'ord', 'syd', 'lon', 'iad']:
+            abort(FailureMessages.INVALID_REGION)
 
         return RackspaceApi(username=username, key=key, region=region)
 
