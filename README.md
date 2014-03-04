@@ -10,6 +10,8 @@ Built on top of the excellent [libcloud](http://libcloud.org/) and [littlechef](
 
 ## Installation Instructions
 
+You must have libyaml-dev installed (C library required by PyYAML).
+
 ```
 pip install littlechef-rackspace
 ```

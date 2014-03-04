@@ -1,10 +1,13 @@
-## 0.7
+## 0.7 (alpha)
 
 * Display performance flavors better (Samuel Toriel)
 * Support creating IAD public cloud resources
 * Add --dry-run argument for showing what arguments
   a node will be created with, but not actually executing
   the creation.
+* Deprecate 'rackspace' section of config.cfg; LittleChef has deprecated
+  the use of a config.cfg.  Future configuration for littlechef-rackspace
+  should use rackspace.yaml.
 * BREAKING: Remove 'hostname' argument.  Nodes are 
   created with the same hostname as their API name.
 
