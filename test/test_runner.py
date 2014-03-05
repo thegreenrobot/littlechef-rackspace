@@ -234,6 +234,9 @@ class RunnerTest(unittest.TestCase):
                         'flavor': 'performance1-2',
                         'runlist': [
                             'role[web]'
+                        ],
+                        'networks': [
+                            '00000000-0000-0000-0000-000000000000'
                         ]
                     }
                 }
@@ -246,6 +249,15 @@ class RunnerTest(unittest.TestCase):
             self.assertEquals('Ubuntu 12.04-Image', call_args.get('image'))
             self.assertEquals(['role[web]'], call_args.get('runlist'))
             self.assertEquals('dfw', call_args.get('region'))
+
+    def test_create_with_template_does_not_pass_templates_to_create_command(self):
+        with mock.patch.multiple("littlechef_rackspace.runner", RackspaceApi=self.api_class,
+                                 ChefDeployer=self.deploy_class, RackspaceCreate=self.create_class):
+            r = Runner(options={'templates': { 'web': { 'image': 'Ubuntu 13.10' }}})
+            r.main(self.create_args)
+
+            call_args = self.create_command.execute.call_args_list[0][1]
+            self.assertTrue('templates' not in call_args)
 
     def test_create_with_invalid_templates_raises_error(self):
         with mock.patch.multiple("littlechef_rackspace.runner", RackspaceApi=self.api_class,

@@ -161,6 +161,9 @@ class Runner(object):
                 self.options[k] = v
 
         config_templates = self.options.get('templates', {})
+        if 'templates' in self.options:
+            del self.options['templates']
+
         for template in templates:
             if template not in config_templates:
                 raise InvalidTemplate
@@ -189,16 +192,14 @@ class Runner(object):
         self._expand_argument(args, 'runlist')
         self._expand_argument(args, 'plugins')
         self._expand_argument(args, 'post-plugins')
+        self._expand_argument(args, 'networks')
 
         if 'use-opscode-chef' in args:
             args['use_opscode_chef'] = bool(args['use-opscode-chef'])
 
-        if args.get('networks'):
-            networks = args.get('networks').split(',')
-            if '00000000-0000-0000-0000-000000000000' not in networks:
+        if 'networks' in args:
+            if '00000000-0000-0000-0000-000000000000' not in args['networks']:
                 raise InvalidConfiguration(FailureMessages.MUST_SPECIFY_PUBLICNET)
-
-            args['networks'] = networks
 
         command.execute(**args)
 
