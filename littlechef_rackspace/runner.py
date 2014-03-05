@@ -20,7 +20,7 @@ def get_command_classes():
 
 class FailureMessages:
 
-    INVALID_REGION = "Must specify a valid region ('dfw', 'ord', 'syd', 'lon', 'iad')."
+    INVALID_REGION = "Must specify a valid region ('dfw', 'ord', 'iad', 'syd', 'hkg', 'lon')."
 
     NEED_API_KEY = ('Must specify username, API key, and region on command line '
                     'or in [rackspace] configuration section of config.cfg')
@@ -126,7 +126,7 @@ class Runner(object):
         key = self.options.get('key')
         region = self.options.get('region', '').lower()
 
-        if region not in ['dfw', 'ord', 'syd', 'lon', 'iad']:
+        if region not in ['dfw', 'ord', 'syd', 'lon', 'iad', 'hkg']:
             abort(FailureMessages.INVALID_REGION)
 
         return RackspaceApi(username=username, key=key, region=region)

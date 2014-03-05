@@ -1,7 +1,7 @@
 ## 0.7 (alpha)
 
 * Display performance flavors better (Samuel Toriel)
-* Support creating IAD public cloud resources
+* Support creating IAD and HKG public cloud resources
 * Add --dry-run argument for showing what arguments
   a node will be created with, but not actually executing
   the creation.
