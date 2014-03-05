@@ -18,39 +18,38 @@ pip install littlechef-rackspace
 
 ## Configuration
 
-In order to perform any commands you must specify `username`, `key`, and `region`.
+`littlechef-rackspace` supports a number of commands for managing your Cloud Resources.
 
-You can specify arguments on the command line or in your littlechef `config.cfg` file.  If you are making a large
-number of machines that look 'the same' I recommend putting your image or flavor configuration in this file.  Your
-`config.cfg` might look something like:
+* create
+* list-images
+* list-networks
+* list-flavors
 
-```
-[userinfo]
-user =
-password =
-keypair-file =
-ssh-config = /home/dave/.ssh/config
+To do any of these, commands you must specify `username`, `key`, and `region`.
 
-[kitchen]
-node_work_path = /tmp/chef-solo/
+You can specify arguments on the command-line or in a `rackspace.yaml` file.x
+Your `rackspace.yaml` might look something like:
 
-[rackspace]
-secrets-file = secrets.cfg
-image=5cebb13a-f783-4f8c-8058-c4182c724ccd
-flavor=2
-public_key=bootstrap.pub
-private_key=bootstrap
-region=dfw
-environment=preprod
+```yaml
+secrets-file: secrets.cfg
+image: 5cebb13a-f783-4f8c-8058-c4182c724ccd
+flavor: 2
+public_key: bootstrap.pub
+private_key: bootstrap
+region: dfw
+environment: preprod
 ```
 
-* `region`: Currently littlechef-rackspace supports Rackspace's Dallas Texas or Chicago IL datacenters (`dfw` or `ord`).
+* `region`: You can choose any Rackspace Cloud region (DFW, ORD, IAD,
+  SYD, LON, HKG).  For LON servers you must have an enabled account (sign up
+  at rackspace.co.uk).
 
 ### Putting Your Secrets in a Secrets File
 
-You can specify a `secrets-file` in the `config.cfg` that contains your username and api key.  This allows
-your source repository to track common configuration (images, flavors) but not secrets.
-Here's an example `secrets.cfg` file:
+You can specify a `secrets-file` in the `rackspace.yaml` that contains your username and api key.
+This allows your source repository to track common configuration (images, flavors) but not secrets.
+The `secrets.cfg` file is a Python configuration file and secrets will be read from under the
+`[DEFAULT]` configuration section. Here's an example `secrets.cfg` file:
 
 ```
 [DEFAULT]
@@ -96,6 +95,45 @@ fix-rackspace create \
 * `skip-opscode-chef`: Don't run `deploy_chef` to install chef with opscode packages (only on command line)
 * `use-opscode-chef`: '0' or '1' based on whether to run `deploy_chef` after initial node startup (defaults to 1).
   Useful when you are installing your own chef packages through a plugin.
+
+### Templates
+
+In practice many arguments are grouped together for creates.  For example, you may have a staging install in the DFW datacenter, but a production install in the ORD datacenter.  These datacenters all use different private network identifiers.  Additionally, you may have several types of node: web, application server, database, each with different plugins or runlists.
+
+To support this hierarchy in arguments and reduce "what were those arguments anyways?" syndrome, `littlechef-rackspace` supports _templates_.  These are specified in your rackspace.yml.
+
+```yaml
+templates:
+  base:
+    runlist:
+      - recipe[test]
+      - recipe[test2]
+  web:
+    runlist:
+      - recipe[web]
+  preprod:
+    region: dfw
+    environment: preprod
+    networks:
+      - 00000000-0000-0000-0000-000000000000
+      - 3d443c50-a45e-11e3-a5e2-0800200c9a66
+  production:
+    region: ord
+    environment: production
+    networks:
+      - 00000000-0000-0000-0000-000000000000
+      - 5df00920-a45e-11e3-a5e2-0800200c9a66
+```
+
+Once a template is defined you can use it as part of node creation by specifying it after the 'create'.
+
+```
+# Applies 'web' and 'preprod' templates to new node 'web-n01.preprod'
+fix-rackspace create --name web-n01.preprod web preprod
+
+# Applies 'web' and 'production' templates to new node 'web-n01.prod'
+fix-rackspace create --name web-n01.prod web production
+```
 
 ### Notes
 
