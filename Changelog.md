@@ -13,6 +13,9 @@
   the boilerplate associated with spinning up a new node.
 * BREAKING: Remove 'hostname' argument.  Nodes are
   created with the same hostname as their API name.
+* BREAKING: littlechef 1.6.1 is required.  Your littlechef configuration 
+  needs to be specified in littlechef.cfg now (not config.cfg), and you
+  must have an environments/ directory.
 
 ## 0.6 (2013-04-25)
 

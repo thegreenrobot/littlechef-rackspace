@@ -1,5 +1,8 @@
 from fabric.operations import sudo, os
-import simplejson as json
+try:
+    import simplejson as json
+except ImportError:
+    import json
 from fabric.context_managers import hide
 from littlechef import runner as lc
 import littlechef
