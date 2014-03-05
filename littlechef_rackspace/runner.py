@@ -1,8 +1,11 @@
-import ConfigParser
-import os
 from optparse import OptionParser
 from fabric.utils import abort
+
+import ConfigParser
+import os
 import littlechef
+import yaml
+
 from api import RackspaceApi
 from deploy import ChefDeployer
 from commands import RackspaceCreate, RackspaceListImages, RackspaceListFlavors, RackspaceListNetworks
@@ -17,7 +20,7 @@ def get_command_classes():
 
 class FailureMessages:
 
-    INVALID_REGION = "Must specify a valid region ('dfw', 'ord', 'syd', 'lon', 'iad')."
+    INVALID_REGION = "Must specify a valid region ('dfw', 'ord', 'iad', 'syd', 'hkg', 'lon')."
 
     NEED_API_KEY = ('Must specify username, API key, and region on command line '
                     'or in [rackspace] configuration section of config.cfg')
@@ -30,11 +33,11 @@ class FailureMessages:
 class RackspaceOptionParser(OptionParser):
     def print_help(self, file=None):
         OptionParser.print_help(self, file)
-        print "\nAvailable commands:\n"
+        print("\nAvailable commands:\n")
         for command_class in get_command_classes():
-            print "   {0}\t{1}".format(command_class.name,
-                                       command_class.description)
-        print ""
+            print("   {0}\t{1}".format(command_class.name,
+                                       command_class.description))
+        print("")
 
 
 parser = RackspaceOptionParser()
@@ -75,19 +78,28 @@ parser.add_option("-n", "--networks", dest="networks",
                   help="Comma separated list of network ids to create node with (PublicNet is required)",
                   default=None)
 
+
 class Runner(object):
     def _read_littlechef_config(self):
         try:
             config = ConfigParser.SafeConfigParser()
             success = config.read(littlechef.CONFIGFILE)
             if success:
-                return dict(config.items('rackspace'))
+                if os.path.isfile("rackspace.yaml"):
+                    return yaml.load(file("rackspace.yaml"))
+                elif os.path.isfile("rackspace.yml"):
+                    return yaml.load(file("rackspace.yml"))
+                else:
+                    print("WARNING: Reading configuration from deprecated {0} file, consider "
+                          "upgrading to use rackspace.yaml".format(littlechef.CONFIGFILE))
+                    return dict(config.items('rackspace'))
+
             else:
                 abort("Could not read littlechef configuration file!  "
                       "Make sure you are running in a kitchen (fix new_kitchen).")
         except ConfigParser.ParsingError:
             pass
-        except ConfigParser.NoSectionError as e:
+        except ConfigParser.NoSectionError:
             pass
 
         return None
@@ -116,7 +128,7 @@ class Runner(object):
         key = self.options.get('key')
         region = self.options.get('region', '').lower()
 
-        if region not in ['dfw', 'ord', 'syd', 'lon', 'iad']:
+        if region not in ['dfw', 'ord', 'syd', 'lon', 'iad', 'hkg']:
             abort(FailureMessages.INVALID_REGION)
 
         return RackspaceApi(username=username, key=key, region=region)
@@ -125,6 +137,10 @@ class Runner(object):
         key_filename = self.options.get("private_key", "~/.ssh/id_rsa")
         return ChefDeployer(key_filename=key_filename)
 
+    def _expand_argument(self, args, key):
+        if args.get(key) and not isinstance(args.get(key), list):
+            args[key.replace('-', '_')] = args[key].split(',')
+
     def main(self, cmd_args):
         (options, args) = parser.parse_args(cmd_args)
 
@@ -132,6 +148,8 @@ class Runner(object):
             raise InvalidCommand
 
         user_command = args[0]
+        templates = args[1:]
+
         matched_commands = filter(lambda command_class: command_class.name == user_command,
                                   self.command_classes)
 
@@ -141,6 +159,15 @@ class Runner(object):
         for k, v in vars(options).items():
             if v is not None and v != '':
                 self.options[k] = v
+
+        config_templates = self.options.get('templates', {})
+        if 'templates' in self.options:
+            del self.options['templates']
+
+        for template in templates:
+            if template not in config_templates:
+                raise InvalidTemplate
+            self.options.update(config_templates.get(template))
 
         command_class = matched_commands[0]
         command_kwargs = {'rackspace_api': None,
@@ -162,26 +189,20 @@ class Runner(object):
         public_key = args.get('public_key', "~/.ssh/id_rsa.pub")
         args['public_key_file'] = file(os.path.expanduser(public_key))
 
-        if args.get('runlist'):
-            args['runlist'] = args['runlist'].split(',')
-
-        if args.get('plugins'):
-            args['plugins'] = args['plugins'].split(',')
-
-        if args.get('post-plugins'):
-            args['post_plugins'] = args['post-plugins'].split(',')
+        self._expand_argument(args, 'runlist')
+        self._expand_argument(args, 'plugins')
+        self._expand_argument(args, 'post-plugins')
+        self._expand_argument(args, 'networks')
 
         if 'use-opscode-chef' in args:
             args['use_opscode_chef'] = bool(args['use-opscode-chef'])
 
-        if args.get('networks'):
-            networks = args.get('networks').split(',')
-            if '00000000-0000-0000-0000-000000000000' not in networks:
+        if 'networks' in args:
+            if '00000000-0000-0000-0000-000000000000' not in args['networks']:
                 raise InvalidConfiguration(FailureMessages.MUST_SPECIFY_PUBLICNET)
 
-            args['networks'] = networks
-
         command.execute(**args)
+
 
 class MissingRequiredArguments(Exception):
     pass
@@ -192,4 +213,8 @@ class InvalidConfiguration(Exception):
 
 
 class InvalidCommand(Exception):
+    pass
+
+
+class InvalidTemplate(Exception):
     pass

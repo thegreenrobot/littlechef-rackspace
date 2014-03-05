@@ -1,0 +1,26 @@
+secrets-file: rackspace.cfg
+image: 5cebb13a-f783-4f8c-8058-c4182c724ccd
+flavor: performance1-1
+public_key: bootstrap.pub
+private_key: bootstrap
+plugins: save_network
+
+# Templates are groups of arguments that can be applied
+# during creation.  For example, the following command
+# applies the configuration options specified by
+# 'preprod' and 'web'
+#
+# fix-rackspace create preprod web
+#
+# Configuration options are applied in the order specified
+templates:
+  base:
+    runlist:
+      - recipe[test]
+      - recipe[test2]
+  web:
+    runlist:
+      - recipe[web]
+  preprod:
+    region: dfw
+    environment: preprod

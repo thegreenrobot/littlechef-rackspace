@@ -9,6 +9,8 @@ site-cookbooks/
 cookbooks/
 config.cfg
 rackspace.cfg
+rackspace.yaml
+*-secrets.cfg
 *.egg-info/
 build/
 dist/
