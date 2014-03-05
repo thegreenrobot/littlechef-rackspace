@@ -259,6 +259,26 @@ class RunnerTest(unittest.TestCase):
             call_args = self.create_command.execute.call_args_list[0][1]
             self.assertTrue('templates' not in call_args)
 
+    def test_create_with_multiple_template_merges_array_arguments(self):
+        with mock.patch.multiple("littlechef_rackspace.runner", RackspaceApi=self.api_class,
+                                 ChefDeployer=self.deploy_class, RackspaceCreate=self.create_class):
+            templates = {
+                'templates': {
+                    'test1': {
+                        'region': 'dfw',
+                        'runlist': ['role[test1]' ]
+                    },
+                    'test2': {
+                        'runlist': ['role[test2]' ]
+                    }
+                }
+            }
+            r = Runner(options=templates)
+            r.main('{0} test1 test2 --name test'.format(self.create_base).split())
+
+            call_args = self.create_command.execute.call_args_list[0][1]
+            self.assertEquals(['role[test1]', 'role[test2]'], call_args['runlist'])
+
     def test_create_with_invalid_templates_raises_error(self):
         with mock.patch.multiple("littlechef_rackspace.runner", RackspaceApi=self.api_class,
                                  ChefDeployer=self.deploy_class, RackspaceCreate=self.create_class):
