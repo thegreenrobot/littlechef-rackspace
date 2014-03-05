@@ -16,16 +16,45 @@ class RackspaceCreateTest(unittest.TestCase):
                                        chef_deployer=self.deployer)
         self.api.create_node.return_value = Host()
 
+    def test_dry_run_does_not_create_node_in_api(self):
+        self.command.execute(name="not-importnat", image="imageId",
+                             flavor="fileId", public_key_file=StringIO("whatever"),
+                             progress=StringIO(),
+                             dry_run=True)
+
+        self.assertEqual(len(self.api.create_node.call_args_list), 0)
+
+    def test_create_outputs_arguments(self):
+        progress = StringIO()
+        self.command.execute(name="not-important", image="imageId",
+                             environment='production',
+                             flavor="flavorId", public_key_file=StringIO("whatever"),
+                             progress=progress)
+
+        output_arguments = progress.getvalue()
+        self.assertEqual(output_arguments, """Creating node with arguments:
+{
+    "environment": "production",
+    "flavor": "flavorId",
+    "name": "not-important",
+    "image": "imageId",
+    "networks": null
+}
+"""
+        )
+
+
     def test_creates_host_in_api(self):
         node_name = "test"
         image = "imageId"
         flavor = "flavorId"
         public_key_file = StringIO("~/.ssh/id_rsa.pub")
 
-        self.command.execute(node_name=node_name, image=image,
-                             flavor=flavor, public_key_file=public_key_file)
+        self.command.execute(name=node_name, image=image,
+                             flavor=flavor, public_key_file=public_key_file,
+                             progress=StringIO())
 
-        self.api.create_node.assert_any_call(node_name=node_name, image=image,
+        self.api.create_node.assert_any_call(name=node_name, image=image,
                                              flavor=flavor, public_key_file=public_key_file,
                                              networks=None,
                                              progress=sys.stderr)
@@ -36,8 +65,9 @@ class RackspaceCreateTest(unittest.TestCase):
             'plugins': 'bootstrap',
             'post_plugins': 'all_done'
         }
-        self.command.execute(node_name="something", image="imageId",
+        self.command.execute(name="something", image="imageId",
                              flavor="fileId", public_key_file=StringIO("whatever"),
+                             progress=StringIO(),
                              **kwargs)
 
         expected_args = {
@@ -47,16 +77,10 @@ class RackspaceCreateTest(unittest.TestCase):
 
         self.deployer.deploy.assert_any_call(**expected_args)
 
-    def test_deploys_to_host_with_hostname(self):
-        self.command.execute(node_name="something", image="imageId",
-                             flavor="fileId", public_key_file=StringIO("whatever"),
-                             hostname="test.example.com")
-
-        self.deployer.deploy.assert_any_call(host=Host(host_string="test.example.com"))
-
     def test_deploys_to_host_with_environment(self):
-        self.command.execute(node_name="something", image="imageId",
+        self.command.execute(name="something", image="imageId",
                              flavor="fileId", public_key_file=StringIO("whatever"),
+                             progress=StringIO(),
                              environment='staging')
 
         expected_host = Host()

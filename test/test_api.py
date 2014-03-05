@@ -93,18 +93,18 @@ class RackspaceApiTest(unittest.TestCase):
 
         image_id = "5cebb13a-f783-4f8c-8058-c4182c724ccd"
         flavor_id = "2"
-        node_name = "new-node"
+        name = "new-node"
         public_key = "ssh-file deadbeef dave@isis"
         public_key_io = StringIO(public_key)
         conn.create_node.return_value = self.active_node
 
-        api.create_node(node_name=node_name,
+        api.create_node(name=name,
                         image=image_id,
                         flavor=flavor_id,
                         public_key_file=public_key_io)
 
         call_kwargs = conn.create_node.call_args_list[0][1]
-        self.assertEquals(node_name, call_kwargs['name'])
+        self.assertEquals(name, call_kwargs['name'])
         self.assertEquals(image_id, call_kwargs['image'].id)
         self.assertEquals(flavor_id, call_kwargs['size'].id)
         self.assertEquals({"/root/.ssh/authorized_keys": public_key},
@@ -116,7 +116,7 @@ class RackspaceApiTest(unittest.TestCase):
         network_id_list = ['id1', 'id2', 'id3']
         conn.create_node.return_value = self.active_node
 
-        api.create_node(node_name="some name",
+        api.create_node(name="some name",
                         image="some image",
                         flavor="some flavor",
                         public_key_file=StringIO("some public key"),
@@ -138,7 +138,7 @@ class RackspaceApiTest(unittest.TestCase):
         conn.ex_get_node_details.return_value = self.active_node
 
         with mock.patch('littlechef_rackspace.api.time') as time:
-            api.create_node(node_name="some name",
+            api.create_node(name="some name",
                             image="5cebb13a-f783-4f8c-8058-c4182c724ccd",
                             flavor="2",
                             public_key_file=StringIO("some public key"))
@@ -156,7 +156,7 @@ class RackspaceApiTest(unittest.TestCase):
         self.active_node.extra['password'] = 'password'
         conn.create_node.return_value = self.active_node
 
-        result = api.create_node(node_name="some name",
+        result = api.create_node(name="some name",
                                  image="5cebb13a-f783-4f8c-8058-c4182c724ccd",
                                  flavor="2",
                                  public_key_file=StringIO("some public key"))
@@ -186,18 +186,18 @@ class RackspaceApiTest(unittest.TestCase):
         self.pending_node.extra['password'] = password
 
         with mock.patch('littlechef_rackspace.api.time') as time:
-            node_name = "new node"
+            name = "new node"
             image_id = "dontcare"
             flavor_id = "2"
-            host = api.create_node(node_name=node_name,
+            host = api.create_node(name=name,
                                    image=image_id,
                                    flavor=flavor_id,
                                    public_key_file=StringIO("some key"),
                                    progress=progress)
 
             self.assertEquals([
-                "Creating node {0} (image: {1}, flavor: {2})...".format(node_name, image_id, flavor_id),
-                "Created node {0} (id: {1}, password: {2})".format(node_name, self.pending_node.id, password),
+                "Creating node {0} (image: {1}, flavor: {2})...".format(name, image_id, flavor_id),
+                "Created node {0} (id: {1}, password: {2})".format(name, self.pending_node.id, password),
                 "Waiting for node to become active{0}".format("." * 6),
                 "Node active! (host: {0})".format(host.ip_address)
             ], progress.getvalue().splitlines())

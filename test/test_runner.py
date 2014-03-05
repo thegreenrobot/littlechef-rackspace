@@ -33,7 +33,7 @@ class RunnerTest(unittest.TestCase):
         self.list_images_command = self.list_images_class.return_value
 
         # Dumb hacks using README.md as a public key because you can't mock out a file() call
-        self.create_args = "create --flavor 2 --image 123 --node-name test-node --username username --key deadbeef --region dfw --public-key README.md".split(' ')
+        self.create_args = "create --flavor 2 --image 123 --name test-node --username username --key deadbeef --region dfw --public-key README.md".split(' ')
 
         list_images_command_string = "list-images --username username --key deadbeef --region REGION --public-key README.md"
         self.dfw_list_images_args = list_images_command_string.replace('REGION', 'dfw').split(' ')
@@ -116,7 +116,7 @@ class RunnerTest(unittest.TestCase):
 
             self.assertEquals("123", call_args["image"])
             self.assertEquals("2", call_args["flavor"])
-            self.assertEquals("test-node", call_args["node_name"])
+            self.assertEquals("test-node", call_args["name"])
             self.assertEquals('README.md', call_args['public_key_file'].name)
 
     def test_create_with_runlist_parses_runlist_into_array(self):

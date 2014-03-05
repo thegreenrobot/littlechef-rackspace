@@ -1,3 +1,13 @@
+## 0.7
+
+* Display performance flavors better (Samuel Toriel)
+* Support creating IAD public cloud resources
+* Add --dry-run argument for showing what arguments
+  a node will be created with, but not actually executing
+  the creation.
+* BREAKING: Remove 'hostname' argument.  Nodes are 
+  created with the same hostname as their API name.
+
 ## 0.6 (2013-04-25)
 
 * Support creating SYD resources (if your account has Sydney OpenStack

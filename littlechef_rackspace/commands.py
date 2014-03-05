@@ -1,4 +1,6 @@
 import sys
+import simplejson as json
+
 
 class Command(object):
 
@@ -25,20 +27,32 @@ class RackspaceCreate(Command):
         super(RackspaceCreate, self).__init__(rackspace_api)
         self.chef_deploy = chef_deployer
 
-    def execute(self, node_name, flavor, image, public_key_file, environment=None, hostname=None, networks=None, **kwargs):
-        host = self.rackspace_api.create_node(node_name=node_name, flavor=flavor,
+    def execute(self, name, flavor, image, public_key_file,
+                environment=None, networks=None, progress=sys.stderr, **kwargs):
+        create_args = {
+            'name': name,
+            'flavor': flavor,
+            'image': image,
+            'environment': environment,
+            'networks': networks,
+        }
+        create_args.update(kwargs)
+
+        progress.write("Creating node with arguments:\n{0}\n".format(json.dumps(create_args, indent=4)))
+        if kwargs.get('dry_run', False):
+            return
+
+        host = self.rackspace_api.create_node(name=name, flavor=flavor,
                                               image=image, public_key_file=public_key_file,
                                               networks=networks,
                                               progress=sys.stderr)
         if environment:
             host.environment = environment
-        if hostname:
-            host.host_string = hostname
 
         self.chef_deploy.deploy(host=host, **kwargs)
 
     def validate_args(self, **kwargs):
-        required_args = ["node_name", "flavor", "image"]
+        required_args = ["name", "flavor", "image"]
         for arg in required_args:
             if not kwargs.get(arg):
                 return False

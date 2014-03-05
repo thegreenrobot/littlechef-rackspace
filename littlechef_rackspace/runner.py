@@ -44,8 +44,8 @@ parser.add_option("-f", "--flavor", dest="flavor",
                   help="Flavor ID")
 parser.add_option("-A", "--username", dest="username",
                   help="Rackspace Username")
-parser.add_option("-N", "--node-name", dest="node_name",
-                  help="Node name")
+parser.add_option("-N", "--name", dest="name",
+                  help="Node name (will become hostname for node)")
 parser.add_option("-K", "--key", dest="key",
                   help="Rackspace API Key")
 parser.add_option("-R", "--region", dest="region", default="",
@@ -59,9 +59,6 @@ parser.add_option("-r", "--runlist", dest="runlist",
 parser.add_option("-e", "--env", dest="environment",
                   help="Environment for newly created node",
                   default=None)
-parser.add_option("-H", "--hostname", dest="hostname",
-                  help="Hostname for newly created node (DNS will not be set up -- you must do this manually)",
-                  default=None)
 parser.add_option("-p", "--plugins", dest="plugins",
                   help="Plugins to execute after chef bootstrapping but before chef run e.g, 'save_cloud,save_hosts'",
                   default=None)
@@ -69,6 +66,8 @@ parser.add_option("-P", "--post-plugins", dest="post-plugins",
                   help="Plugins to execute after chef run. e.g, 'mark_node_as_provisioned'",
                   default=None)
 parser.add_option("--skip-opscode-chef", action="store_false", dest="use-opscode-chef")
+parser.add_option("--dry-run", action="store_true", dest="dry_run",
+                  help="When creating a node, do not actually create/deploy")
 parser.add_option("--use-opscode-chef", type="int", dest="use-opscode-chef",
                   help="Integer argument with whether or not to use the OpsCode Chef repositorities (installed with 'fix deploy_chef')",
                   default=None)
