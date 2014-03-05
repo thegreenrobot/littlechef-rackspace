@@ -6,7 +6,7 @@ from littlechef_rackspace.deploy import ChefDeployer
 class ChefDeployerTest(unittest.TestCase):
 
     def setUp(self):
-        self.host = Host(host_string="test.example.com",
+        self.host = Host(name="test.example.com",
                          ip_address="50.56.57.58")
         self.ohai_data = {
             'cloud': {
@@ -71,7 +71,7 @@ class ChefDeployerTest(unittest.TestCase):
 
         deployer.deploy(self.host)
 
-        littlechef.lib.get_node.assert_any_call(self.host.host_string)
+        littlechef.lib.get_node.assert_any_call(self.host.name)
         node_data.update(self.ohai_data)
         littlechef.chef.save_config.assert_any_call(node_data, force=True)
 
@@ -81,7 +81,7 @@ class ChefDeployerTest(unittest.TestCase):
         deployer = self._get_deployer(key_filename="~/.ssh/id_rsa")
 
         node_data = {}
-        self.host.host_string = None
+        self.host.name = None
         littlechef.lib.get_node.return_value = node_data
 
         deployer.deploy(self.host)
@@ -103,7 +103,7 @@ class ChefDeployerTest(unittest.TestCase):
         predefined_data['run_list'] = runlist
 
         littlechef.chef.save_config.assert_any_call(predefined_data, force=True)
-        littlechef.lib.get_node.assert_any_call(self.host.host_string)
+        littlechef.lib.get_node.assert_any_call(self.host.name)
 
     @mock.patch('littlechef_rackspace.deploy.lc')
     @mock.patch('littlechef_rackspace.deploy.littlechef')
@@ -148,15 +148,6 @@ HostName 50.56.57.58
         self.assertTrue(lc.env.use_ssh_config)
         self.assertEquals(lc.env.ssh_config_path,
                           "./.bootstrap-config_{0}".format(self.host.get_host_string()))
-
-    @mock.patch('littlechef_rackspace.deploy.lc')
-    @mock.patch('littlechef_rackspace.deploy.littlechef')
-    def test_deploy_with_runlist_runs_node_on_ip_address(self, littlechef, lc):
-        deployer = self._get_deployer(key_filename="~/.ssh/id_rsa")
-
-        deployer.deploy(self.host)
-
-        lc.node.assert_any_call(self.host.host_string)
 
     @mock.patch('littlechef_rackspace.deploy.lc')
     @mock.patch('littlechef_rackspace.deploy.littlechef')

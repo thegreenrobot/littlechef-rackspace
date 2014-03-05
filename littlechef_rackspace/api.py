@@ -35,7 +35,7 @@ class RackspaceApi(object):
         return [{ "id": size.id, "name": size.name}
                 for size in conn.list_sizes()]
 
-    def create_node(self, image, flavor, node_name, public_key_file, networks=None, progress=None):
+    def create_node(self, image, flavor, name, public_key_file, networks=None, progress=None):
         create_kwargs = {}
         if networks:
             fake_networks = [OpenStackNetwork(n, None, None, self) for n in networks]
@@ -47,9 +47,9 @@ class RackspaceApi(object):
                                bandwidth=None, price=None, driver=conn)
 
         if progress:
-            progress.write("Creating node {0} (image: {1}, flavor: {2})...\n".format(node_name, image, flavor))
+            progress.write("Creating node {0} (image: {1}, flavor: {2})...\n".format(name, image, flavor))
 
-        node = conn.create_node(name=node_name, image=fake_image,
+        node = conn.create_node(name=name, image=fake_image,
                          size=fake_flavor, ex_files={
                              "/root/.ssh/authorized_keys": public_key_file.read()
                          },
@@ -57,7 +57,7 @@ class RackspaceApi(object):
         password = node.extra.get("password")
 
         if progress:
-            progress.write("Created node {0} (id: {1}, password: {2})\n".format(node_name, node.id, password))
+            progress.write("Created node {0} (id: {1}, password: {2})\n".format(name, node.id, password))
             progress.write("Waiting for node to become active")
 
         while node.state != NodeState.RUNNING:
@@ -73,6 +73,6 @@ class RackspaceApi(object):
         if progress:
             progress.write("\n")
             progress.write("Node active! (host: {0})\n".format(public_ipv4_address))
-        return Host(name=node_name,
+        return Host(name=name,
                     ip_address=public_ipv4_address,
                     password=password)
