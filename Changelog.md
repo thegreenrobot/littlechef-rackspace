@@ -8,7 +8,10 @@
 * Deprecate 'rackspace' section of config.cfg; LittleChef has deprecated
   the use of a config.cfg.  Future configuration for littlechef-rackspace
   should use rackspace.yaml.
-* BREAKING: Remove 'hostname' argument.  Nodes are 
+* Add template support to creating nodes: templates are groups of arguments
+  that are specified on the command line after 'create' and should reduce
+  the boilerplate associated with spinning up a new node.
+* BREAKING: Remove 'hostname' argument.  Nodes are
   created with the same hostname as their API name.
 
 ## 0.6 (2013-04-25)
