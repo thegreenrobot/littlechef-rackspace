@@ -32,7 +32,7 @@ class RackspaceCreateTest(unittest.TestCase):
                              progress=progress)
 
         output_arguments = progress.getvalue()
-        self.assertEqual(output_arguments, """Creating node with arguments:
+        self.assertEqual(output_arguments.replace(' ', ''), """Creating node with arguments:
 {
     "environment": "production",
     "flavor": "flavorId",
@@ -40,7 +40,7 @@ class RackspaceCreateTest(unittest.TestCase):
     "image": "imageId",
     "networks": null
 }
-"""
+""".replace(' ', '')
         )
 
 
