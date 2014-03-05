@@ -167,7 +167,15 @@ class Runner(object):
         for template in templates:
             if template not in config_templates:
                 raise InvalidTemplate
-            self.options.update(config_templates.get(template))
+
+            template_arguments = config_templates.get(template)
+            for key, value in template_arguments.iteritems():
+                if key not in self.options:
+                    self.options[key] = value
+                elif isinstance(self.options[key], list):
+                    self.options[key] += value
+                else:
+                    self.options[key] = value
 
         command_class = matched_commands[0]
         command_kwargs = {'rackspace_api': None,
