@@ -135,6 +135,27 @@ fix-rackspace create --name web-n01.preprod web preprod
 fix-rackspace create --name web-n01.prod web production
 ```
 
+List-based arguments will be combined if multiple templates apply.  For example,
+given the following template:
+
+```yaml
+templates:
+  base:
+    networks:
+      - 00000000-0000-0000-0000-000000000000
+  preprod:
+    region: dfw
+    environment: preprod
+    networks:
+      - 3d443c50-a45e-11e3-a5e2-0800200c9a66
+```
+
+The following command will create a node with two networks, 
+`00000000-0000-0000-0000-000000000000` and `3d443c50-a45e-11e3-a5e2-0800200c9a66`.
+
+fix-rackspace create --name base-n01.preprod base preprod
+```
+
 ### Notes
 
 The server is created with your public key file in the `/root/.ssh/authorized_keys`.
