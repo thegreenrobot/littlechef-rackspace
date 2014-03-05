@@ -3,6 +3,7 @@ try:
 except ImportError:
     from distutils.core import setup
 
+
 setup(
     name="littlechef-rackspace",
     version=__import__('littlechef_rackspace').__version__,
@@ -12,7 +13,7 @@ setup(
     url="http://github.com/tildedave/littlechef-rackspace",
     download_url="http://github.com/tildedave/littlechef-rackspace/archives/master",
     keywords=["chef", "rackspace", "openstack", "devops", "operations"],
-    install_requires=['littlechef>=1.4.1', 'apache-libcloud==0.12.4'],
+    install_requires=file('requirements.txt').read().splitlines(),
     packages=['littlechef_rackspace'],
     scripts=['fix-rackspace'],
     test_suite='nose.collector',
