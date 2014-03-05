@@ -3,7 +3,7 @@ import mock
 from littlechef_rackspace.api import RackspaceApi
 from littlechef_rackspace.commands import RackspaceCreate, RackspaceListImages
 from littlechef_rackspace.deploy import ChefDeployer
-from littlechef_rackspace.runner import Runner, MissingRequiredArguments, InvalidConfiguration, InvalidCommand, FailureMessages
+from littlechef_rackspace.runner import Runner, MissingRequiredArguments, InvalidConfiguration, InvalidCommand, FailureMessages, InvalidTemplate
 
 
 class AbortException(Exception):
@@ -32,10 +32,16 @@ class RunnerTest(unittest.TestCase):
 
         self.list_images_command = self.list_images_class.return_value
 
-        # Dumb hacks using README.md as a public key because you can't mock out a file() call
-        self.create_args = "create --flavor 2 --image 123 --name test-node --username username --key deadbeef --region dfw --public-key README.md".split(' ')
 
-        list_images_command_string = "list-images --username username --key deadbeef --region REGION --public-key README.md"
+        # Dumb hacks using README.md as a public key because you can't mock out a file() call
+        self.create_base = "create --public-key README.md"
+        self.create_args = ("{0} --flavor 2 --image 123 --name test-node " +
+                            "--username username --key deadbeef --region dfw " +
+                            "--public-key README.md").format(self.create_base).split(' ')
+
+        list_images_command_string = ("list-images --username username --key deadbeef " +
+                                      "--region REGION --public-key README.md")
+
         self.dfw_list_images_args = list_images_command_string.replace('REGION', 'dfw').split(' ')
         self.lon_list_images_args = list_images_command_string.replace('REGION', 'lon').split(' ')
         self.syd_list_images_args = list_images_command_string.replace('REGION', 'syd').split(' ')
@@ -214,3 +220,36 @@ class RunnerTest(unittest.TestCase):
 
             call_args = self.create_command.execute.call_args_list[0][1]
             self.assertEquals([public_net_id, custom_net_id], call_args.get('networks'))
+
+    def test_create_with_template_includes_template(self):
+        with mock.patch.multiple("littlechef_rackspace.runner", RackspaceApi=self.api_class,
+                                 ChefDeployer=self.deploy_class, RackspaceCreate=self.create_class):
+            r = Runner(options={
+                'templates': {
+                    'preprod': {
+                        'region': 'dfw'
+                    },
+                    'web': {
+                        'image': 'Ubuntu 12.04-Image',
+                        'flavor': 'performance1-2',
+                        'runlist': [
+                            'role[web]'
+                        ]
+                    }
+                }
+            })
+
+            r.main('{0} --name test preprod web'.format(self.create_base).split(' '))
+
+            call_args = self.create_command.execute.call_args_list[0][1]
+            self.assertEquals('performance1-2', call_args.get('flavor'))
+            self.assertEquals('Ubuntu 12.04-Image', call_args.get('image'))
+            self.assertEquals(['role[web]'], call_args.get('runlist'))
+            self.assertEquals('dfw', call_args.get('region'))
+
+    def test_create_with_invalid_templates_raises_error(self):
+        with mock.patch.multiple("littlechef_rackspace.runner", RackspaceApi=self.api_class,
+                                 ChefDeployer=self.deploy_class, RackspaceCreate=self.create_class):
+            r = Runner(options={})
+            with self.assertRaises(InvalidTemplate):
+                r.main('{0} --name test invalidtemplate'.format(self.create_base).split(' '))

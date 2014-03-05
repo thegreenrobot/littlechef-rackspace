@@ -55,6 +55,7 @@ class RackspaceCreate(Command):
         required_args = ["name", "flavor", "image"]
         for arg in required_args:
             if not kwargs.get(arg):
+                print("Missing argument {0}".format(arg))
                 return False
 
         return True

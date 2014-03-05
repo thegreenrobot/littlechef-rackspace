@@ -78,6 +78,7 @@ parser.add_option("-n", "--networks", dest="networks",
                   help="Comma separated list of network ids to create node with (PublicNet is required)",
                   default=None)
 
+
 class Runner(object):
     def _read_littlechef_config(self):
         try:
@@ -134,6 +135,10 @@ class Runner(object):
         key_filename = self.options.get("private_key", "~/.ssh/id_rsa")
         return ChefDeployer(key_filename=key_filename)
 
+    def _expand_argument(self, args, key):
+        if args.get(key) and not isinstance(args.get(key), list):
+            args[key.replace('-', '_')] = args[key].split(',')
+
     def main(self, cmd_args):
         (options, args) = parser.parse_args(cmd_args)
 
@@ -141,6 +146,8 @@ class Runner(object):
             raise InvalidCommand
 
         user_command = args[0]
+        templates = args[1:]
+
         matched_commands = filter(lambda command_class: command_class.name == user_command,
                                   self.command_classes)
 
@@ -150,6 +157,12 @@ class Runner(object):
         for k, v in vars(options).items():
             if v is not None and v != '':
                 self.options[k] = v
+
+        config_templates = self.options.get('templates', {})
+        for template in templates:
+            if template not in config_templates:
+                raise InvalidTemplate
+            self.options.update(config_templates.get(template))
 
         command_class = matched_commands[0]
         command_kwargs = {'rackspace_api': None,
@@ -171,14 +184,9 @@ class Runner(object):
         public_key = args.get('public_key', "~/.ssh/id_rsa.pub")
         args['public_key_file'] = file(os.path.expanduser(public_key))
 
-        if args.get('runlist'):
-            args['runlist'] = args['runlist'].split(',')
-
-        if args.get('plugins'):
-            args['plugins'] = args['plugins'].split(',')
-
-        if args.get('post-plugins'):
-            args['post_plugins'] = args['post-plugins'].split(',')
+        self._expand_argument(args, 'runlist')
+        self._expand_argument(args, 'plugins')
+        self._expand_argument(args, 'post-plugins')
 
         if 'use-opscode-chef' in args:
             args['use_opscode_chef'] = bool(args['use-opscode-chef'])
@@ -192,6 +200,7 @@ class Runner(object):
 
         command.execute(**args)
 
+
 class MissingRequiredArguments(Exception):
     pass
 
@@ -201,4 +210,8 @@ class InvalidConfiguration(Exception):
 
 
 class InvalidCommand(Exception):
+    pass
+
+
+class InvalidTemplate(Exception):
     pass
