@@ -87,6 +87,8 @@ class Runner(object):
             if success:
                 if os.path.isfile("rackspace.yaml"):
                     return yaml.load(file("rackspace.yaml"))
+                elif os.path.isfile("rackspace.yml"):
+                    return yaml.load(file("rackspace.yml"))
                 else:
                     print("WARNING: Reading configuration from deprecated {0} file, consider "
                           "upgrading to use rackspace.yaml".format(littlechef.CONFIGFILE))
