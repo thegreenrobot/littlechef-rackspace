@@ -5,7 +5,6 @@ public_key: bootstrap.pub
 private_key: bootstrap
 plugins: save_network
 
-
 # Templates are groups of arguments that can be applied
 # during creation.  For example, the following command
 # applies the configuration options specified by
