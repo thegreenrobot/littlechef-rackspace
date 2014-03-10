@@ -111,7 +111,7 @@ class Runner(object):
 
         self.options = options or {}
 
-        secrets_file = self.options.get('secrets-file')
+    def _read_secrets_file(self, secrets_file):
         if secrets_file:
             try:
                 del self.options['secrets-file']
@@ -119,9 +119,11 @@ class Runner(object):
                 # yes, look at another config file
                 secrets_config = ConfigParser.SafeConfigParser()
                 _ = secrets_config.read(secrets_file)
-                self.options.update(dict(secrets_config.items(ConfigParser.DEFAULTSECT)))
+                return dict(secrets_config.items(ConfigParser.DEFAULTSECT))
             except ConfigParser.ParsingError:
                 pass
+
+        return {}
 
     def get_api(self):
         username = self.options.get('username')
@@ -176,6 +178,8 @@ class Runner(object):
                     self.options[key] += value
                 else:
                     self.options[key] = value
+
+        self.options.update(self._read_secrets_file(self.options.get('secrets-file')))
 
         command_class = matched_commands[0]
         command_kwargs = {'rackspace_api': None,

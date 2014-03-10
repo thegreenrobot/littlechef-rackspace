@@ -250,6 +250,29 @@ class RunnerTest(unittest.TestCase):
             self.assertEquals(['role[web]'], call_args.get('runlist'))
             self.assertEquals('dfw', call_args.get('region'))
 
+    def test_create_with_template_that_has_secrets_file_includes_values(self):
+        with mock.patch.multiple("littlechef_rackspace.runner", RackspaceApi=self.api_class,
+                                 ChefDeployer=self.deploy_class, RackspaceCreate=self.create_class):
+            r = Runner(options={
+                'templates': {
+                    'preprod': {
+                        'secrets-file': 'secrets-test.cfg',
+                        'region': 'dfw'
+                    }
+                }
+            })
+            r._read_secrets_file = mock.Mock(return_value={
+                'username': 'testuser',
+                'key': 'testuserkey'
+            })
+
+            r.main('{0} --name test preprod'.format(self.create_base).split(' '))
+
+            call_args = self.create_command.execute.call_args_list[0][1]
+            r._read_secrets_file.assert_any_call('secrets-test.cfg')
+            self.assertEquals('testuser', call_args.get('username'))
+            self.assertEquals('testuserkey', call_args.get('key'))
+
     def test_create_with_template_does_not_pass_templates_to_create_command(self):
         with mock.patch.multiple("littlechef_rackspace.runner", RackspaceApi=self.api_class,
                                  ChefDeployer=self.deploy_class, RackspaceCreate=self.create_class):
