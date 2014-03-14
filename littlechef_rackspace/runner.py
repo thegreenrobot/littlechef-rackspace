@@ -77,6 +77,9 @@ parser.add_option("--use-opscode-chef", type="int", dest="use-opscode-chef",
 parser.add_option("-n", "--networks", dest="networks",
                   help="Comma separated list of network ids to create node with (PublicNet is required)",
                   default=None)
+parser.add_option("--retry-attempts", dest="connection_attempts", type=int,
+                  help="Number of connection attempts for SSH before failing",
+                  default=1)
 
 
 class Runner(object):
@@ -199,7 +202,9 @@ class Runner(object):
             return
 
         public_key = args.get('public_key', "~/.ssh/id_rsa.pub")
+        connection_attempts = args.get('connection_attempts', 1)
         args['public_key_file'] = file(os.path.expanduser(public_key))
+        args['connection_attempts'] = connection_attempts
 
         self._expand_argument(args, 'runlist')
         self._expand_argument(args, 'plugins')

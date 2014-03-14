@@ -18,7 +18,8 @@ class ChefDeployer(object):
         plugins = plugins or []
         post_plugins = post_plugins or []
 
-        self._setup_ssh_config(host)
+        attempts = kwargs.get('connection_attempts', 1)
+        self._setup_ssh_config(host, connection_attempts=attempts)
         if use_opscode_chef:
             lc.deploy_chef(ask="no")
 
@@ -52,7 +53,7 @@ class ChefDeployer(object):
 
         plugin.execute(node)
 
-    def _setup_ssh_config(self, host):
+    def _setup_ssh_config(self, host, **kwargs):
         """
         New servers are created with 'root' user and an authorized public key
         that is a pair for the private key specified by self.key_filename.
@@ -81,6 +82,7 @@ class ChefDeployer(object):
         lc.env.user = "root"
         lc.env.host = host.get_host_string()
         lc.env.host_string = host.get_host_string()
+        lc.env.connection_attempts = kwargs.get('connection_attempts', 1)
 
     def _bootstrap_node(self, host):
         lc.node(host.get_host_string())
