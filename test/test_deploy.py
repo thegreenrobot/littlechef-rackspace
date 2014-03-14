@@ -40,6 +40,7 @@ class ChefDeployerTest(unittest.TestCase):
         self.assertEquals("root", lc.env.user)
         self.assertEquals(self.host.get_host_string(), lc.env.host_string)
         self.assertEquals(self.host.get_host_string(), lc.env.host)
+        self.assertEquals(10, lc.env.connection_attempts)
 
     @mock.patch('littlechef_rackspace.deploy.lc')
     @mock.patch('littlechef_rackspace.deploy.littlechef')

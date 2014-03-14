@@ -81,6 +81,7 @@ class ChefDeployer(object):
         lc.env.user = "root"
         lc.env.host = host.get_host_string()
         lc.env.host_string = host.get_host_string()
+        lc.env.connection_attempts = 10
 
     def _bootstrap_node(self, host):
         lc.node(host.get_host_string())
