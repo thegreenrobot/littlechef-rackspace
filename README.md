@@ -66,7 +66,7 @@ fix-rackspace create \
     --region <region, must be DFW or ORD> \
     --image 5cebb13a-f783-4f8c-8058-c4182c724ccd \
     --flavor 2 \
-    --node-name "test-creation" \
+    --name "test-creation" \
     --public-key <public_key_file> \
     --private-key <private_key_file> \
     --runlist "role[web],recipe[security-updates]" \
