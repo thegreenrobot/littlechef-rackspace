@@ -132,7 +132,8 @@ class Runner(object):
                 secrets_file = os.path.expanduser(secrets_file)
                 # yes, look at another config file
                 secrets_config = ConfigParser.SafeConfigParser()
-                _ = secrets_config.read(secrets_file)
+                secrets_config.read(secrets_file)
+                # assert _
                 return dict(secrets_config.items(ConfigParser.DEFAULTSECT))
             except ConfigParser.ParsingError:
                 pass
