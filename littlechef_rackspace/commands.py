@@ -19,6 +19,7 @@ class Command(object):
     def validate_args(self, **kwargs):
         return True
 
+
 class RackspaceCreate(Command):
 
     name = "create"
@@ -31,7 +32,8 @@ class RackspaceCreate(Command):
         self.chef_deploy = chef_deployer
 
     def execute(self, name, flavor, image, public_key_file,
-                environment=None, networks=None, progress=sys.stderr, **kwargs):
+                environment=None, networks=None,
+                progress=sys.stderr, **kwargs):
         create_args = {
             'name': name,
             'flavor': flavor,
@@ -41,12 +43,14 @@ class RackspaceCreate(Command):
         }
         create_args.update(kwargs)
 
-        progress.write("Creating node with arguments:\n{0}\n".format(json.dumps(create_args, indent=4)))
+        progress.write("Creating node with arguments:\n{0}\n"
+                       .format(json.dumps(create_args, indent=4)))
         if kwargs.get('dry_run', False):
             return
 
         host = self.rackspace_api.create_node(name=name, flavor=flavor,
-                                              image=image, public_key_file=public_key_file,
+                                              image=image,
+                                              public_key_file=public_key_file,
                                               networks=networks,
                                               progress=sys.stderr)
         if environment:
@@ -63,6 +67,7 @@ class RackspaceCreate(Command):
 
         return True
 
+
 class RackspaceListImages(Command):
 
     name = "list-images"
@@ -72,7 +77,9 @@ class RackspaceListImages(Command):
     def execute(self, progress=sys.stderr, **kwargs):
         images = self.rackspace_api.list_images()
         for image in images:
-            progress.write('{0}{1}\n'.format(image['id'].ljust(43), image['name']))
+            progress.write('{0}{1}\n'.format(image['id'].ljust(43),
+                           image['name']))
+
 
 class RackspaceListFlavors(Command):
 
@@ -83,7 +90,9 @@ class RackspaceListFlavors(Command):
     def execute(self, progress=sys.stderr, **kwargs):
         flavors = self.rackspace_api.list_flavors()
         for flavor in flavors:
-            progress.write('{0}{1}\n'.format(flavor['id'].ljust(20), flavor['name']))
+            progress.write('{0}{1}\n'.format(flavor['id'].ljust(20),
+                           flavor['name']))
+
 
 class RackspaceListNetworks(Command):
 

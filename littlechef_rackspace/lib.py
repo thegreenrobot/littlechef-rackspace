@@ -5,7 +5,8 @@ class Host(object):
     for Chef deployment, role addition, etc.
     """
 
-    def __init__(self, name=None, host_string=None, ip_address=None, password=None, environment=None):
+    def __init__(self, name=None, host_string=None, ip_address=None,
+                 password=None, environment=None):
         self.name = name
         self.ip_address = ip_address
         self.password = password

@@ -8,7 +8,8 @@ import yaml
 
 from api import RackspaceApi
 from deploy import ChefDeployer
-from commands import RackspaceCreate, RackspaceListImages, RackspaceListFlavors, RackspaceListNetworks
+from commands import RackspaceCreate, RackspaceListImages
+from commands import RackspaceListFlavors, RackspaceListNetworks
 
 
 def get_command_classes():
@@ -20,14 +21,17 @@ def get_command_classes():
 
 class FailureMessages:
 
-    INVALID_REGION = "Must specify a valid region ('dfw', 'ord', 'iad', 'syd', 'hkg', 'lon')."
+    INVALID_REGION = ("Must specify a valid region "
+                      "'dfw', 'ord', 'iad', 'syd', 'hkg', 'lon'.")
 
-    NEED_API_KEY = ('Must specify username, API key, and region on command line '
-                    'or in [rackspace] configuration section of config.cfg')
+    NEED_API_KEY = ("Must specify username, API key, and region "
+                    "on command line or in [rackspace] configuration "
+                    "section of config.cfg")
 
     MISSING_REQUIRED_ARGUMENTS = "Missing required arguments"
 
-    MUST_SPECIFY_PUBLICNET = 'Must specify PublicNet in networks list (id=00000000-0000-0000-0000-000000000000)'
+    MUST_SPECIFY_PUBLICNET = ("Must specify PublicNet in networks "
+                              "list (id=00000000-0000-0000-0000-000000000000)")
 
 
 class RackspaceOptionParser(OptionParser):
@@ -58,24 +62,31 @@ parser.add_option("-a", "--public-key", dest="public_key",
 parser.add_option("-i", "--private-key", dest="private_key",
                   help="Private Key File for Bootstrapping")
 parser.add_option("-r", "--runlist", dest="runlist",
-                  help="Node runlist delimited by commas, e.g. 'role[web],recipe[db]'")
+                  help=("Node runlist delimited by commas, e.g. "
+                        "'role[web],recipe[db]'"))
 parser.add_option("-e", "--env", dest="environment",
                   help="Environment for newly created node",
                   default=None)
 parser.add_option("-p", "--plugins", dest="plugins",
-                  help="Plugins to execute after chef bootstrapping but before chef run e.g, 'save_cloud,save_hosts'",
+                  help=("Plugins to execute after chef bootstrapping but "
+                        "before chef run e.g, 'save_cloud,save_hosts'"),
                   default=None)
 parser.add_option("-P", "--post-plugins", dest="post-plugins",
-                  help="Plugins to execute after chef run. e.g, 'mark_node_as_provisioned'",
+                  help=("Plugins to execute after chef run. "
+                        "e.g, 'mark_node_as_provisioned'"),
                   default=None)
-parser.add_option("--skip-opscode-chef", action="store_false", dest="use-opscode-chef")
+parser.add_option("--skip-opscode-chef", action="store_false",
+                  dest="use-opscode-chef")
 parser.add_option("--dry-run", action="store_true", dest="dry_run",
                   help="When creating a node, do not actually create/deploy")
 parser.add_option("--use-opscode-chef", type="int", dest="use-opscode-chef",
-                  help="Integer argument with whether or not to use the OpsCode Chef repositorities (installed with 'fix deploy_chef')",
+                  help=("Integer argument with whether or not to use "
+                        "the OpsCode Chef repositorities "
+                        "(installed with 'fix deploy_chef')"),
                   default=None)
 parser.add_option("-n", "--networks", dest="networks",
-                  help="Comma separated list of network ids to create node with (PublicNet is required)",
+                  help="Comma separated list of network ids to \
+                          create node with (PublicNet is required)",
                   default=None)
 
 
@@ -90,13 +101,16 @@ class Runner(object):
                 elif os.path.isfile("rackspace.yml"):
                     return yaml.load(file("rackspace.yml"))
                 else:
-                    print("WARNING: Reading configuration from deprecated {0} file, consider "
-                          "upgrading to use rackspace.yaml".format(littlechef.CONFIGFILE))
+                    print(("WARNING: Reading configuration from deprecated "
+                           "{0} file, consider upgrading to use "
+                           "rackspace.yaml")
+                          .format(littlechef.CONFIGFILE))
                     return dict(config.items('rackspace'))
 
             else:
-                abort("Could not read littlechef configuration file!  "
-                      "Make sure you are running in a kitchen (fix new_kitchen).")
+                abort("Could not read littlechef configuration file! "
+                      "Make sure you are running in a "
+                      "kitchen (fix new_kitchen).")
         except ConfigParser.ParsingError:
             pass
         except ConfigParser.NoSectionError:
@@ -152,7 +166,8 @@ class Runner(object):
         user_command = args[0]
         templates = args[1:]
 
-        matched_commands = filter(lambda command_class: command_class.name == user_command,
+        matched_commands = filter(lambda command_class:
+                                  command_class.name == user_command,
                                   self.command_classes)
 
         if not matched_commands:
@@ -179,7 +194,8 @@ class Runner(object):
                 else:
                     self.options[key] = value
 
-        self.options.update(self._read_secrets_file(self.options.get('secrets-file')))
+        self.options.update(self._read_secrets_file(
+                            self.options.get('secrets-file')))
 
         command_class = matched_commands[0]
         command_kwargs = {'rackspace_api': None,
@@ -211,7 +227,9 @@ class Runner(object):
 
         if 'networks' in args:
             if '00000000-0000-0000-0000-000000000000' not in args['networks']:
-                raise InvalidConfiguration(FailureMessages.MUST_SPECIFY_PUBLICNET)
+                raise InvalidConfiguration(
+                    FailureMessages.MUST_SPECIFY_PUBLICNET
+                )
 
         command.execute(**args)
 
