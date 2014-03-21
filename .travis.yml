@@ -4,7 +4,11 @@ python:
   - "2.7"
 # - "3.2"
 before_install:
-  - sudo apt-get install libyaml-dev
-install: "pip install -r requirements.txt --use-mirrors"
+  - "sudo apt-get install libyaml-dev"
+install: 
+  - "pip install -r requirements.txt --use-mirrors"
+  - "pip install flake8"
+before_script:
+  - "flake8 littlechef_rackspace"
 # command to run tests
 script: nosetests

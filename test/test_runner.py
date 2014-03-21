@@ -3,7 +3,9 @@ import mock
 from littlechef_rackspace.api import RackspaceApi
 from littlechef_rackspace.commands import RackspaceCreate, RackspaceListImages
 from littlechef_rackspace.deploy import ChefDeployer
-from littlechef_rackspace.runner import Runner, MissingRequiredArguments, InvalidConfiguration, InvalidCommand, FailureMessages, InvalidTemplate
+from littlechef_rackspace.runner import Runner, InvalidConfiguration
+from littlechef_rackspace.runner import InvalidCommand, FailureMessages
+from littlechef_rackspace.runner import InvalidTemplate
 
 
 class AbortException(Exception):
@@ -21,7 +23,7 @@ class RunnerTest(unittest.TestCase):
         self.deploy_class = mock.Mock(spec=ChefDeployer)
         self.chef_deployer = self.deploy_class.return_value
         self.create_class = mock.Mock(spec=RackspaceCreate)
-        self.abort=mock.Mock()
+        self.abort = mock.Mock()
         self.abort.side_effect = AbortException
 
         self.create_class.name = 'create'
@@ -32,19 +34,31 @@ class RunnerTest(unittest.TestCase):
 
         self.list_images_command = self.list_images_class.return_value
 
+        '''
+        Dumb hacks using README.md as a public key because you can't
+        mock out a file() call.
+        '''
 
-        # Dumb hacks using README.md as a public key because you can't mock out a file() call
         self.create_base = "create --public-key README.md"
         self.create_args = ("{0} --flavor 2 --image 123 --name test-node " +
-                            "--username username --key deadbeef --region dfw " +
-                            "--public-key README.md").format(self.create_base).split(' ')
+                            "--username username --key deadbeef " +
+                            "--region dfw --public-key README.md"
+                            ).format(self.create_base).split(' ')
 
-        list_images_command_string = ("list-images --username username --key deadbeef " +
-                                      "--region REGION --public-key README.md")
+        list_images_command_string = ("list-images --username username " +
+                                      "--key deadbeef --region REGION " +
+                                      "--public-key README.md"
+                                      )
 
-        self.dfw_list_images_args = list_images_command_string.replace('REGION', 'dfw').split(' ')
-        self.lon_list_images_args = list_images_command_string.replace('REGION', 'lon').split(' ')
-        self.syd_list_images_args = list_images_command_string.replace('REGION', 'syd').split(' ')
+        self.dfw_list_images_args = list_images_command_string.replace(
+            'REGION', 'dfw'
+            ).split(' ')
+        self.lon_list_images_args = list_images_command_string.replace(
+            'REGION', 'lon'
+            ).split(' ')
+        self.syd_list_images_args = list_images_command_string.replace(
+            'REGION', 'syd'
+            ).split(' ')
 
     def test_must_specify_command(self):
         r = Runner(options={})
@@ -57,24 +71,34 @@ class RunnerTest(unittest.TestCase):
             r.main(['bogus-command'])
 
     def test_list_images_fails_if_configuration_is_not_provided(self):
-        with mock.patch.multiple("littlechef_rackspace.runner", RackspaceApi=self.api_class,
-                                 ChefDeployer=self.deploy_class, RackspaceListImages=self.list_images_class,
-                                 abort=self.abort):
+        with mock.patch.multiple(
+                "littlechef_rackspace.runner",
+                RackspaceApi=self.api_class,
+                ChefDeployer=self.deploy_class,
+                RackspaceListImages=self.list_images_class,
+                abort=self.abort):
             with self.assertRaises(AbortException):
                 r = Runner(options={})
                 r.main(["list-images"])
                 self.abort.assert_any_call(FailureMessages.NEED_API_KEY)
 
     def test_list_images_with_dfw_region_instantiates_api(self):
-        with mock.patch.multiple("littlechef_rackspace.runner", RackspaceApi=self.api_class,
-                                 ChefDeployer=self.deploy_class, RackspaceListImages=self.list_images_class):
+        with mock.patch.multiple(
+                "littlechef_rackspace.runner",
+                RackspaceApi=self.api_class,
+                ChefDeployer=self.deploy_class,
+                RackspaceListImages=self.list_images_class):
             r = Runner(options={})
             r.main(self.dfw_list_images_args)
-            self.api_class.assert_any_call(username="username", key="deadbeef", region='dfw')
+            self.api_class.assert_any_call(username="username",
+                                           key="deadbeef",
+                                           region='dfw')
 
     def test_uses_config_settings(self):
-        with mock.patch.multiple("littlechef_rackspace.runner", RackspaceApi=self.api_class,
-                                 ChefDeployer=self.deploy_class, RackspaceListImages=self.list_images_class):
+        with mock.patch.multiple("littlechef_rackspace.runner",
+                                 RackspaceApi=self.api_class,
+                                 ChefDeployer=self.deploy_class,
+                                 RackspaceListImages=self.list_images_class):
             r = Runner(options={
                 'username': 'username',
                 'key': 'deadbeef',
@@ -82,36 +106,51 @@ class RunnerTest(unittest.TestCase):
             })
             # another dumb hack
             r.main(['list-images', '--public-key', 'README.md'])
-            self.api_class.assert_any_call(username="username", key="deadbeef", region='ord')
+            self.api_class.assert_any_call(username="username",
+                                           key="deadbeef",
+                                           region='ord')
 
     def test_create_fails_if_configuration_is_not_provided(self):
         r = Runner(options={})
-        with mock.patch.multiple('littlechef_rackspace.runner', abort=self.abort):
+        with mock.patch.multiple('littlechef_rackspace.runner',
+                                 abort=self.abort):
             with self.assertRaises(AbortException):
                 r.main(["create"])
                 self.abort.assert_any_call(FailureMessages.NEED_API_KEY)
 
-
     def test_create_fails_if_required_arguments_are_not_provided(self):
-        with mock.patch.multiple('littlechef_rackspace.runner', abort=self.abort):
+        with mock.patch.multiple('littlechef_rackspace.runner',
+                                 abort=self.abort):
             with self.assertRaises(AbortException):
                 self.create_command.validate_args.return_value = False
                 r = Runner(options={})
-                r.main("create --username username --key deadbeef --region dfw".split(" "))
-                self.abort.assert_any_call(FailureMessages.MISSING_REQUIRED_ARGUMENTS)
+                r.main(("create --username username --key deadbeef "
+                       "--region dfw").split(" "))
+                self.abort.assert_any_call(
+                    FailureMessages.MISSING_REQUIRED_ARGUMENTS
+                    )
 
     def test_create_instantiates_api_and_deploy_with_default_private_key(self):
-        with mock.patch.multiple("littlechef_rackspace.runner", RackspaceApi=self.api_class,
-                                 ChefDeployer=self.deploy_class, RackspaceCreate=self.create_class):
+        with mock.patch.multiple(
+                "littlechef_rackspace.runner",
+                RackspaceApi=self.api_class,
+                ChefDeployer=self.deploy_class,
+                RackspaceCreate=self.create_class):
             r = Runner(options={})
             r.main(self.create_args)
 
-            self.api_class.assert_any_call(username="username", key="deadbeef", region='dfw')
+            self.api_class.assert_any_call(
+                username="username",
+                key="deadbeef",
+                region='dfw')
             self.deploy_class.assert_any_call(key_filename="~/.ssh/id_rsa")
 
     def test_create_creates_node_with_specified_public_key(self):
-        with mock.patch.multiple("littlechef_rackspace.runner", RackspaceApi=self.api_class,
-                                 ChefDeployer=self.deploy_class, RackspaceCreate=self.create_class):
+        with mock.patch.multiple(
+                "littlechef_rackspace.runner",
+                RackspaceApi=self.api_class,
+                ChefDeployer=self.deploy_class,
+                RackspaceCreate=self.create_class):
             r = Runner(options={})
             r.main(self.create_args)
 
@@ -126,47 +165,65 @@ class RunnerTest(unittest.TestCase):
             self.assertEquals('README.md', call_args['public_key_file'].name)
 
     def test_create_with_runlist_parses_runlist_into_array(self):
-        with mock.patch.multiple("littlechef_rackspace.runner", RackspaceApi=self.api_class,
-                                 ChefDeployer=self.deploy_class, RackspaceCreate=self.create_class):
+        with mock.patch.multiple(
+                "littlechef_rackspace.runner",
+                RackspaceApi=self.api_class,
+                ChefDeployer=self.deploy_class,
+                RackspaceCreate=self.create_class):
             r = Runner(options={})
             runlist = 'role[test],recipe[web],recipe[apache2]'
-            r.main(self.create_args + [ '--runlist', runlist ])
+            r.main(self.create_args + ['--runlist', runlist])
 
             call_args = self.create_command.execute.call_args_list[0][1]
             self.assertEquals(runlist.split(','), call_args["runlist"])
 
     def test_create_with_plugins_parses_plugins_into_array(self):
-        with mock.patch.multiple("littlechef_rackspace.runner", RackspaceApi=self.api_class,
-                                 ChefDeployer=self.deploy_class, RackspaceCreate=self.create_class):
+        with mock.patch.multiple(
+                "littlechef_rackspace.runner",
+                RackspaceApi=self.api_class,
+                ChefDeployer=self.deploy_class,
+                RackspaceCreate=self.create_class):
             r = Runner(options={})
             plugins = 'plugin1,plugin2,plugin3'
-            r.main(self.create_args + [ '--plugins', plugins ])
+            r.main(self.create_args + ['--plugins', plugins])
 
             call_args = self.create_command.execute.call_args_list[0][1]
             self.assertEquals(plugins.split(','), call_args["plugins"])
 
     def test_create_with_postplugins_parses_postplugins_into_array(self):
-        with mock.patch.multiple("littlechef_rackspace.runner", RackspaceApi=self.api_class,
-                                 ChefDeployer=self.deploy_class, RackspaceCreate=self.create_class):
+        with mock.patch.multiple(
+                "littlechef_rackspace.runner",
+                RackspaceApi=self.api_class,
+                ChefDeployer=self.deploy_class,
+                RackspaceCreate=self.create_class):
             r = Runner(options={})
             post_plugins = 'plugin1,plugin2,plugin3'
-            r.main(self.create_args + [ '--post-plugins', post_plugins ])
+            r.main(self.create_args + ['--post-plugins', post_plugins])
 
             call_args = self.create_command.execute.call_args_list[0][1]
-            self.assertEquals(post_plugins.split(','), call_args["post_plugins"])
+            self.assertEquals(
+                post_plugins.split(','),
+                call_args["post_plugins"]
+                )
 
     def test_create_with_skip_opscode_chef_to_false(self):
-        with mock.patch.multiple("littlechef_rackspace.runner", RackspaceApi=self.api_class,
-                                 ChefDeployer=self.deploy_class, RackspaceCreate=self.create_class):
+        with mock.patch.multiple(
+                "littlechef_rackspace.runner",
+                RackspaceApi=self.api_class,
+                ChefDeployer=self.deploy_class,
+                RackspaceCreate=self.create_class):
             r = Runner(options={})
-            r.main(self.create_args + [ '--skip-opscode-chef'])
+            r.main(self.create_args + ['--skip-opscode-chef'])
 
             call_args = self.create_command.execute.call_args_list[0][1]
             self.assertEquals(False, call_args["use_opscode_chef"])
 
     def test_create_without_skip_opscode_chef(self):
-        with mock.patch.multiple("littlechef_rackspace.runner", RackspaceApi=self.api_class,
-                                 ChefDeployer=self.deploy_class, RackspaceCreate=self.create_class):
+        with mock.patch.multiple(
+                "littlechef_rackspace.runner",
+                RackspaceApi=self.api_class,
+                ChefDeployer=self.deploy_class,
+                RackspaceCreate=self.create_class):
             r = Runner(options={})
             r.main(self.create_args)
 
@@ -174,26 +231,35 @@ class RunnerTest(unittest.TestCase):
             self.assertEquals(None, call_args.get("use_opscode_chef"))
 
     def test_create_with_use_opscode_chef_to_false(self):
-        with mock.patch.multiple("littlechef_rackspace.runner", RackspaceApi=self.api_class,
-                                 ChefDeployer=self.deploy_class, RackspaceCreate=self.create_class):
+        with mock.patch.multiple(
+                "littlechef_rackspace.runner",
+                RackspaceApi=self.api_class,
+                ChefDeployer=self.deploy_class,
+                RackspaceCreate=self.create_class):
             r = Runner(options={})
-            r.main(self.create_args + [ '--use-opscode-chef', '0'])
+            r.main(self.create_args + ['--use-opscode-chef', '0'])
 
             call_args = self.create_command.execute.call_args_list[0][1]
             self.assertEquals(False, call_args["use_opscode_chef"])
 
     def test_create_with_use_opscode_chef_to_true(self):
-        with mock.patch.multiple("littlechef_rackspace.runner", RackspaceApi=self.api_class,
-                                 ChefDeployer=self.deploy_class, RackspaceCreate=self.create_class):
+        with mock.patch.multiple(
+                "littlechef_rackspace.runner",
+                RackspaceApi=self.api_class,
+                ChefDeployer=self.deploy_class,
+                RackspaceCreate=self.create_class):
             r = Runner(options={})
-            r.main(self.create_args + [ '--use-opscode-chef', '1'])
+            r.main(self.create_args + ['--use-opscode-chef', '1'])
 
             call_args = self.create_command.execute.call_args_list[0][1]
             self.assertEquals(True, call_args.get("use_opscode_chef"))
 
     def test_create_with_use_opscode_chef_not_specified(self):
-        with mock.patch.multiple("littlechef_rackspace.runner", RackspaceApi=self.api_class,
-                                 ChefDeployer=self.deploy_class, RackspaceCreate=self.create_class):
+        with mock.patch.multiple(
+                "littlechef_rackspace.runner",
+                RackspaceApi=self.api_class,
+                ChefDeployer=self.deploy_class,
+                RackspaceCreate=self.create_class):
             r = Runner(options={})
             r.main(self.create_args)
 
@@ -201,29 +267,44 @@ class RunnerTest(unittest.TestCase):
             self.assertFalse("use_opscode_chef" in call_args)
 
     def test_create_with_networks_without_publicnet_raises_exception(self):
-        with mock.patch.multiple("littlechef_rackspace.runner", RackspaceApi=self.api_class,
-                                 ChefDeployer=self.deploy_class, RackspaceCreate=self.create_class):
+        with mock.patch.multiple(
+                "littlechef_rackspace.runner",
+                RackspaceApi=self.api_class,
+                ChefDeployer=self.deploy_class,
+                RackspaceCreate=self.create_class):
             r = Runner(options={})
             with self.assertRaises(InvalidConfiguration) as cm:
-                r.main(self.create_args + [ '--networks', 'abcdefg'])
+                r.main(self.create_args + ['--networks', 'abcdefg'])
 
-            self.assertEquals('Must specify PublicNet in networks list (id=00000000-0000-0000-0000-000000000000)',
+            self.assertEquals("Must specify PublicNet in networks list " +
+                              "(id=00000000-0000-0000-0000-000000000000)",
                               cm.exception.message)
 
     def test_create_with_networks_passes_networks(self):
-        with mock.patch.multiple("littlechef_rackspace.runner", RackspaceApi=self.api_class,
-                                 ChefDeployer=self.deploy_class, RackspaceCreate=self.create_class):
+        with mock.patch.multiple(
+                "littlechef_rackspace.runner",
+                RackspaceApi=self.api_class,
+                ChefDeployer=self.deploy_class,
+                RackspaceCreate=self.create_class):
             r = Runner(options={})
             public_net_id = '00000000-0000-0000-0000-000000000000'
-            custom_net_id= '45e8b288-3a98-4092-a3e8-37e2a540d004'
-            r.main(self.create_args + [ '--networks', '{0},{1}'.format(public_net_id, custom_net_id)])
+            custom_net_id = '45e8b288-3a98-4092-a3e8-37e2a540d004'
+            r.main(self.create_args +
+                   ['--networks', '{0},{1}'.format(
+                    public_net_id,
+                    custom_net_id)]
+                   )
 
             call_args = self.create_command.execute.call_args_list[0][1]
-            self.assertEquals([public_net_id, custom_net_id], call_args.get('networks'))
+            self.assertEquals([public_net_id, custom_net_id],
+                              call_args.get('networks'))
 
     def test_create_with_template_includes_template(self):
-        with mock.patch.multiple("littlechef_rackspace.runner", RackspaceApi=self.api_class,
-                                 ChefDeployer=self.deploy_class, RackspaceCreate=self.create_class):
+        with mock.patch.multiple(
+                "littlechef_rackspace.runner",
+                RackspaceApi=self.api_class,
+                ChefDeployer=self.deploy_class,
+                RackspaceCreate=self.create_class):
             r = Runner(options={
                 'templates': {
                     'preprod': {
@@ -242,7 +323,8 @@ class RunnerTest(unittest.TestCase):
                 }
             })
 
-            r.main('{0} --name test preprod web'.format(self.create_base).split(' '))
+            r.main('{0} --name test preprod web'.format(
+                self.create_base).split(' '))
 
             call_args = self.create_command.execute.call_args_list[0][1]
             self.assertEquals('performance1-2', call_args.get('flavor'))
@@ -251,8 +333,11 @@ class RunnerTest(unittest.TestCase):
             self.assertEquals('dfw', call_args.get('region'))
 
     def test_create_with_template_that_has_secrets_file_includes_values(self):
-        with mock.patch.multiple("littlechef_rackspace.runner", RackspaceApi=self.api_class,
-                                 ChefDeployer=self.deploy_class, RackspaceCreate=self.create_class):
+        with mock.patch.multiple(
+                "littlechef_rackspace.runner",
+                RackspaceApi=self.api_class,
+                ChefDeployer=self.deploy_class,
+                RackspaceCreate=self.create_class):
             r = Runner(options={
                 'templates': {
                     'preprod': {
@@ -266,45 +351,63 @@ class RunnerTest(unittest.TestCase):
                 'key': 'testuserkey'
             })
 
-            r.main('{0} --name test preprod'.format(self.create_base).split(' '))
+            r.main('{0} --name test preprod'.format(
+                self.create_base).split(' '))
 
             call_args = self.create_command.execute.call_args_list[0][1]
             r._read_secrets_file.assert_any_call('secrets-test.cfg')
             self.assertEquals('testuser', call_args.get('username'))
             self.assertEquals('testuserkey', call_args.get('key'))
 
-    def test_create_with_template_does_not_pass_templates_to_create_command(self):
-        with mock.patch.multiple("littlechef_rackspace.runner", RackspaceApi=self.api_class,
-                                 ChefDeployer=self.deploy_class, RackspaceCreate=self.create_class):
-            r = Runner(options={'templates': { 'web': { 'image': 'Ubuntu 13.10' }}})
+    def test_create_with_template_does_not_pass_templates_to_create_cmd(self):
+        with mock.patch.multiple(
+                "littlechef_rackspace.runner",
+                RackspaceApi=self.api_class,
+                ChefDeployer=self.deploy_class,
+                RackspaceCreate=self.create_class):
+            r = Runner(options={
+                'templates': {
+                    'web': {
+                        'image': 'Ubuntu 13.10'
+                        }
+                    }})
             r.main(self.create_args)
 
             call_args = self.create_command.execute.call_args_list[0][1]
             self.assertTrue('templates' not in call_args)
 
     def test_create_with_multiple_template_merges_array_arguments(self):
-        with mock.patch.multiple("littlechef_rackspace.runner", RackspaceApi=self.api_class,
-                                 ChefDeployer=self.deploy_class, RackspaceCreate=self.create_class):
+        with mock.patch.multiple(
+                "littlechef_rackspace.runner",
+                RackspaceApi=self.api_class,
+                ChefDeployer=self.deploy_class,
+                RackspaceCreate=self.create_class):
             templates = {
                 'templates': {
                     'test1': {
                         'region': 'dfw',
-                        'runlist': ['role[test1]' ]
+                        'runlist': ['role[test1]']
                     },
                     'test2': {
-                        'runlist': ['role[test2]' ]
+                        'runlist': ['role[test2]']
                     }
                 }
             }
             r = Runner(options=templates)
-            r.main('{0} test1 test2 --name test'.format(self.create_base).split())
+            r.main('{0} test1 test2 --name test'.format(
+                self.create_base).split())
 
             call_args = self.create_command.execute.call_args_list[0][1]
-            self.assertEquals(['role[test1]', 'role[test2]'], call_args['runlist'])
+            self.assertEquals(['role[test1]', 'role[test2]'],
+                              call_args['runlist'])
 
     def test_create_with_invalid_templates_raises_error(self):
-        with mock.patch.multiple("littlechef_rackspace.runner", RackspaceApi=self.api_class,
-                                 ChefDeployer=self.deploy_class, RackspaceCreate=self.create_class):
+        with mock.patch.multiple(
+                "littlechef_rackspace.runner",
+                RackspaceApi=self.api_class,
+                ChefDeployer=self.deploy_class,
+                RackspaceCreate=self.create_class):
             r = Runner(options={})
             with self.assertRaises(InvalidTemplate):
-                r.main('{0} --name test invalidtemplate'.format(self.create_base).split(' '))
+                r.main('{0} --name test invalidtemplate'.format(
+                    self.create_base).split(' '))

@@ -7,11 +7,13 @@ except ImportError:
 setup(
     name="littlechef-rackspace",
     version=__import__('littlechef_rackspace').__version__,
-    description="Scripts for bootstrapping Rackspace Cloud Servers with Littlechef",
+    description=("Scripts for bootstrapping Rackspace Cloud Servers "
+                 "with Littlechef"),
     author="Dave King",
     author_email="tildedave@gmail.com",
     url="http://github.com/tildedave/littlechef-rackspace",
-    download_url="http://github.com/tildedave/littlechef-rackspace/archives/master",
+    download_url=(
+        "http://github.com/tildedave/littlechef-rackspace/archives/master"),
     keywords=["chef", "rackspace", "openstack", "devops", "operations"],
     install_requires=file('requirements.txt').read().splitlines(),
     packages=['littlechef_rackspace'],

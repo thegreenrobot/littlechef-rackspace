@@ -3,6 +3,7 @@ import mock
 from littlechef_rackspace.lib import Host
 from littlechef_rackspace.deploy import ChefDeployer
 
+
 class ChefDeployerTest(unittest.TestCase):
 
     def setUp(self):
@@ -53,7 +54,8 @@ class ChefDeployerTest(unittest.TestCase):
 
     @mock.patch('littlechef_rackspace.deploy.lc')
     @mock.patch('littlechef_rackspace.deploy.littlechef')
-    def test_deploy_does_not_call_deploys_chef_if_options_is_set(self, littlechef, lc):
+    def test_deploy_does_not_call_deploys_chef_if_option_is_set(
+            self, littlechef, lc):
         deployer = self._get_deployer(key_filename="~/.ssh/id_rsa")
 
         deployer.deploy(self.host, use_opscode_chef=False)
@@ -78,7 +80,8 @@ class ChefDeployerTest(unittest.TestCase):
 
     @mock.patch('littlechef_rackspace.deploy.lc')
     @mock.patch('littlechef_rackspace.deploy.littlechef')
-    def test_deploy_without_hostname_gets_node_with_ip_address(self, littlechef, lc):
+    def test_deploy_without_hostname_gets_node_with_ip_address(
+            self, littlechef, lc):
         deployer = self._get_deployer(key_filename="~/.ssh/id_rsa")
 
         node_data = {}
@@ -103,7 +106,9 @@ class ChefDeployerTest(unittest.TestCase):
         predefined_data.update(self.ohai_data)
         predefined_data['run_list'] = runlist
 
-        littlechef.chef.save_config.assert_any_call(predefined_data, force=True)
+        littlechef.chef.save_config.assert_any_call(
+            predefined_data,
+            force=True)
         littlechef.lib.get_node.assert_any_call(self.host.name)
 
     @mock.patch('littlechef_rackspace.deploy.lc')
@@ -112,7 +117,7 @@ class ChefDeployerTest(unittest.TestCase):
         deployer = self._get_deployer(key_filename="~/.ssh/id_rsa")
         self.host.environment = 'staging'
 
-        expected_data = { 'chef_environment' : 'staging' }
+        expected_data = {'chef_environment': 'staging'}
         expected_data.update(self.ohai_data)
         littlechef.lib.get_node.return_value = expected_data
 
@@ -122,7 +127,8 @@ class ChefDeployerTest(unittest.TestCase):
 
     @mock.patch('littlechef_rackspace.deploy.lc')
     @mock.patch('littlechef_rackspace.deploy.littlechef')
-    def test_deploy_with_runlist_creates_temporary_ssh_config_file(self, littlechef, lc):
+    def test_deploy_with_runlist_creates_temporary_ssh_config_file(
+            self, littlechef, lc):
         deployer = self._get_deployer(key_filename="~/.ssh/id_rsa")
 
         deployer.deploy(self.host)
@@ -141,23 +147,26 @@ HostName 50.56.57.58
 
     @mock.patch('littlechef_rackspace.deploy.lc')
     @mock.patch('littlechef_rackspace.deploy.littlechef')
-    def test_deploy_with_runlist_uses_temporary_ssh_config_values(self, littlechef, lc):
+    def test_deploy_with_runlist_uses_temporary_ssh_config_values(
+            self, littlechef, lc):
         deployer = self._get_deployer(key_filename="~/.ssh/id_rsa")
 
         deployer.deploy(self.host)
 
         self.assertTrue(lc.env.use_ssh_config)
         self.assertEquals(lc.env.ssh_config_path,
-                          "./.bootstrap-config_{0}".format(self.host.get_host_string()))
+                          "./.bootstrap-config_{0}".format(
+                              self.host.get_host_string()))
 
     @mock.patch('littlechef_rackspace.deploy.lc')
     @mock.patch('littlechef_rackspace.deploy.littlechef')
-    def test_deploy_with_plugins_executes_plugins_on_node(self, littlechef, lc):
+    def test_deploy_with_plugins_executes_plugins_on_node(
+            self, littlechef, lc):
         deployer = self._get_deployer(key_filename="~/.ssh/id_rsa")
 
         plugin = mock.Mock()
         littlechef.lib.import_plugin.return_value = plugin
-        node_data = {'predefined': [ 'values' ]}
+        node_data = {'predefined': ['values']}
         littlechef.lib.get_node.return_value = node_data
 
         deployer.deploy(self.host, plugins=['awesome_plugin'])
@@ -173,7 +182,9 @@ HostName 50.56.57.58
         deployer.deploy(self.host, plugins=['plugin1'])
 
         littlechef.lib.print_header.assert_any_call(
-            "Executing plugin '{0}' on {1}".format('plugin1', self.host.get_host_string())
+            "Executing plugin '{0}' on {1}".format(
+                'plugin1',
+                self.host.get_host_string())
         )
 
     @mock.patch('littlechef_rackspace.deploy.lc')

@@ -1,11 +1,12 @@
-from fabric.operations import sudo, os
+from fabric.operations import os
 try:
     import simplejson as json
 except ImportError:
     import json
-from fabric.context_managers import hide
+    assert json
 from littlechef import runner as lc
 import littlechef
+
 
 class ChefDeployer(object):
 
@@ -48,7 +49,8 @@ class ChefDeployer(object):
         node = littlechef.lib.get_node(host.get_host_string())
         plugin = littlechef.lib.import_plugin(plugin_name)
         littlechef.lib.print_header("Executing plugin '{0}' on "
-                                    "{1}".format(plugin_name, lc.env.host_string))
+                                    "{1}".format(plugin_name,
+                                                 lc.env.host_string))
 
         plugin.execute(node)
 
@@ -62,14 +64,16 @@ class ChefDeployer(object):
         # (for example, encrypted data bag secret)
         littlechef.runner._readconfig()
 
-        bootstrap_config_file = os.path.join(".", ".bootstrap-config_{0}".format(host.get_host_string()))
+        bootstrap_config_file = os.path.join(".", ".bootstrap-config_{0}"
+                                             .format(host.get_host_string()))
         contents = ("User root\n"
                     "IdentityFile {key_filename}\n"
                     "StrictHostKeyChecking no\n"
                     "Host {host_string}\n"
-                    "HostName {ip_address}\n").format(key_filename=self.key_filename,
-                                                      host_string=host.get_host_string(),
-                                                      ip_address=host.ip_address)
+                    "HostName {ip_address}\n").format(
+            key_filename=self.key_filename,
+            host_string=host.get_host_string(),
+            ip_address=host.ip_address)
 
         self._create_bootstrap_ssh_config(bootstrap_config_file, contents)
 

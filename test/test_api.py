@@ -14,13 +14,22 @@ class RackspaceApiTest(unittest.TestCase):
         self.username = 'username'
         self.key = 'deadbeef'
 
-        self.pending_node = Node(id='id', name='name', public_ips=[], private_ips=[],
-                                 state=NodeState.PENDING, driver=None)
-        self.active_node = Node(id='id', name='name', public_ips=[ '50.2.3.4'], private_ips=[],
-                                state=NodeState.RUNNING, driver=None)
+        self.pending_node = Node(
+            id='id',
+            name='name',
+            public_ips=[],
+            private_ips=[],
+            state=NodeState.PENDING,
+            driver=None)
+        self.active_node = Node(
+            id='id',
+            name='name',
+            public_ips=['50.2.3.4'],
+            private_ips=[],
+            state=NodeState.RUNNING,
+            driver=None)
 
-
-    def test_list_images_instantiates_driver_with_user_password_and_region(self):
+    def test_list_images_instantiates_driver_with_user_passwd_and_region(self):
         with mock.patch("littlechef_rackspace.api.get_driver") as get_driver:
             driver = get_driver.return_value
 
@@ -51,12 +60,14 @@ class RackspaceApiTest(unittest.TestCase):
         conn.list_images.return_value = [lc_image1, lc_image2]
 
         self.assertEquals([{
-                               'id': lc_image1.id,
-                               'name': lc_image1.name
-                           }, {
-                               'id': lc_image2.id,
-                               'name': lc_image2.name
-                           }], api.list_images())
+            'id': lc_image1.id,
+            'name': lc_image1.name
+            },
+            {
+                'id': lc_image2.id,
+                'name': lc_image2.name
+            }],
+            api.list_images())
 
     def test_list_flavors_returns_size_information(self):
         conn = mock.Mock()
@@ -68,12 +79,14 @@ class RackspaceApiTest(unittest.TestCase):
         conn.list_sizes.return_value = [lc_size1, lc_size2]
 
         self.assertEquals([{
-                               'id': lc_size1.id,
-                               'name': lc_size1.name
-                           }, {
-                               'id': lc_size2.id,
-                               'name': lc_size2.name
-                           }], api.list_flavors())
+            'id': lc_size1.id,
+            'name': lc_size1.name
+            },
+            {
+                'id': lc_size2.id,
+                'name': lc_size2.name
+            }],
+            api.list_flavors())
 
     def test_list_networks_returns_network_information(self):
         conn = mock.Mock()
@@ -84,8 +97,11 @@ class RackspaceApiTest(unittest.TestCase):
                                     driver=None)
         conn.ex_list_networks.return_value = [network1]
 
-        self.assertEquals([{ 'id': network1.id, 'name': network1.name, 'cidr': network1.cidr }],
-                          api.list_networks())
+        self.assertEquals([{
+            'id': network1.id,
+            'name': network1.name,
+            'cidr': network1.cidr}],
+            api.list_networks())
 
     def test_creates_node(self):
         conn = mock.Mock()
@@ -174,6 +190,7 @@ class RackspaceApiTest(unittest.TestCase):
         conn.create_node.return_value = self.pending_node
 
         self.counter = 0
+
         def ex_get_node_details(id):
             if self.counter == 5:
                 return self.active_node
@@ -185,7 +202,7 @@ class RackspaceApiTest(unittest.TestCase):
         password = 'abcDEFghiJKL'
         self.pending_node.extra['password'] = password
 
-        with mock.patch('littlechef_rackspace.api.time') as time:
+        with mock.patch('littlechef_rackspace.api.time'):
             name = "new node"
             image_id = "dontcare"
             flavor_id = "2"
@@ -196,8 +213,14 @@ class RackspaceApiTest(unittest.TestCase):
                                    progress=progress)
 
             self.assertEquals([
-                "Creating node {0} (image: {1}, flavor: {2})...".format(name, image_id, flavor_id),
-                "Created node {0} (id: {1}, password: {2})".format(name, self.pending_node.id, password),
+                "Creating node {0} (image: {1}, flavor: {2})...".format(
+                    name,
+                    image_id,
+                    flavor_id),
+                "Created node {0} (id: {1}, password: {2})".format(
+                    name,
+                    self.pending_node.id,
+                    password),
                 "Waiting for node to become active{0}".format("." * 6),
                 "Node active! (host: {0})".format(host.ip_address)
             ], progress.getvalue().splitlines())
