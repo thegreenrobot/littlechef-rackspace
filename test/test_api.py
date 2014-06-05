@@ -48,6 +48,16 @@ class RackspaceApiTest(unittest.TestCase):
     def _get_api_with_mocked_conn(self, conn):
         api = self._get_api('ord')
         api._get_conn = mock.Mock(return_value=conn)
+
+        self.counter = 0
+        def ex_get_node_details(id):
+            if self.counter == 5:
+                return self.active_node
+
+            self.counter += 1
+            return self.pending_node
+        conn.ex_get_node_details.side_effect = ex_get_node_details
+
         return api
 
     def test_list_images_returns_image_information(self):
@@ -203,21 +213,9 @@ class RackspaceApiTest(unittest.TestCase):
     def test_outputs_progress_during_creation(self):
         conn = mock.Mock()
         api = self._get_api_with_mocked_conn(conn)
-
         progress = StringIO()
-
         conn.create_node.return_value = self.pending_node
 
-        self.counter = 0
-
-        def ex_get_node_details(id):
-            if self.counter == 5:
-                return self.active_node
-
-            self.counter += 1
-            return self.pending_node
-
-        conn.ex_get_node_details.side_effect = ex_get_node_details
         password = 'abcDEFghiJKL'
         self.pending_node.extra['password'] = password
 
@@ -244,18 +242,42 @@ class RackspaceApiTest(unittest.TestCase):
                 "Node active! (host: {0})".format(host.ip_address)
             ], progress.getvalue().splitlines())
 
-    def test_rebuild_node_with_networks(self):
+    def test_rebuild_node(self):
         conn = mock.Mock()
         api = self._get_api_with_mocked_conn(conn)
-        network_id_list = ['id1', 'id2', 'id3']
+        public_key = "ssh-file deadbeef dave@isis"
+        public_key_io = StringIO(public_key)
+        conn.ex_get_node_details.return_value = self.active_node
+
+        api.rebuild_node(server=self.pending_node.id,
+                         image="image-id",
+                         public_key_file=public_key_io)
+
+        call_kwargs = conn.ex_rebuild.call_args_list[0][1]
+
+        self.assertEqual(call_kwargs["node"].id, self.pending_node.id)
+        self.assertEqual(call_kwargs["image"].id, "image-id")
+        self.assertEquals(call_kwargs['ex_files'],
+                          {"/root/.ssh/authorized_keys": public_key})
+
+    def test_rebuild_node_with_progress(self):
+        conn = mock.Mock()
+        conn.ex_rebuild.return_value = True
+        api = self._get_api_with_mocked_conn(conn)
         progress = StringIO()
 
-        api.rebuild_node(server='server-id',
-                         flavor='flavor-id',
-                         image='image-id',
-                         public_key_file=StringIO("some public key"),
-                         networks=network_id_list,
-                         progress=progress)
+        with mock.patch('littlechef_rackspace.api.time'):
+            host = api.rebuild_node(server=self.pending_node.id,
+                                    image="image-id",
+                                    public_key_file=StringIO("some key"),
+                                    progress=progress)
+
+            self.assertEquals([
+                "Rebuilding node {0} ({1})...".format(self.pending_node.name,
+                                                      self.pending_node.id),
+                "Waiting for node to become active{0}".format("." * 6),
+                "Node active! (host: {0})".format(host.ip_address)
+            ], progress.getvalue().splitlines())
 
     def _get_api(self, region):
         return RackspaceApi(self.username, self.key, region)

@@ -127,7 +127,7 @@ class RackspaceListServers(Command):
 
 class RackspaceRebuild(Command):
 
-    name = "create"
+    name = "rebuild"
     description = "Rebuild existing Cloud Server and bootstrap Chef"
     requires_api = True
     requires_deploy = True

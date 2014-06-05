@@ -1,4 +1,4 @@
-from libcloud.compute.base import NodeImage, NodeSize
+from libcloud.compute.base import NodeImage, NodeSize, Node
 from libcloud.compute.drivers.openstack import OpenStackNetwork
 from libcloud.compute.providers import get_driver
 from libcloud.compute.types import Provider, NodeState
@@ -92,6 +92,29 @@ class RackspaceApi(object):
                     ip_address=public_ipv4_address,
                     password=password)
 
-    def rebuild_node(self, server, image, flavor, public_key_file,
+    def rebuild_node(self, server, image, public_key_file,
                      networks=None, progress=None):
-        pass
+        conn = self._get_conn()
+
+        node = conn.ex_get_node_details(server)
+        fake_image = NodeImage(id=image, name=None, driver=conn)
+
+        conn.ex_rebuild(node=node, image=fake_image, ex_files={
+            "/root/.ssh/authorized_keys":
+            public_key_file.read()
+        })
+
+        if progress:
+            progress.write("Rebuilding node {0} ({1})".format(node.name,
+                                                              node.id))
+            progress.write("Waiting for node to become active")
+
+        print node
+        while node.state != NodeState.RUNNING:
+            time.sleep(5)
+            print node
+
+            if progress:
+                progress.write(".")
+
+            node = conn.ex_get_node_details(node.id)
