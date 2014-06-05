@@ -3,9 +3,12 @@ import unittest2 as unittest
 import mock
 import sys
 from littlechef_rackspace.api import RackspaceApi
-from littlechef_rackspace.commands import (RackspaceCreate, RackspaceListImages,
-                                           RackspaceListFlavors, RackspaceListNetworks,
-                                           RackspaceListServers, RackspaceRebuild)
+from littlechef_rackspace.commands import (RackspaceCreate,
+                                           RackspaceListImages,
+                                           RackspaceListFlavors,
+                                           RackspaceListNetworks,
+                                           RackspaceListServers,
+                                           RackspaceRebuild)
 from littlechef_rackspace.deploy import ChefDeployer
 from littlechef_rackspace.lib import Host
 
@@ -198,15 +201,19 @@ class RackspaceListServersTest(unittest.TestCase):
 
     def test_outputs_servers(self):
         progress = StringIO()
-        server1 = { 'id': '0', 'name': 'server1', 'public_ipv4': '50.50.50.50'}
-        server2 = { 'id': '1', 'name': 'server2', 'public_ipv4': '51.51.51.51'}
-        self.api.list_servers.return_value = [ server1, server2 ]
+        server1 = {'id': '0', 'name': 'server1', 'public_ipv4': '50.50.50.50'}
+        server2 = {'id': '1', 'name': 'server2', 'public_ipv4': '51.51.51.51'}
+        self.api.list_servers.return_value = [server1, server2]
 
         self.command.execute(progress=progress)
 
         self.assertEquals([
-            '{0}{1}{2}'.format(server1['id'].ljust(36 + 5), server1['name'].ljust(20), server1['public_ipv4']),
-            '{0}{1}{2}'.format(server2['id'].ljust(36 + 5), server2['name'].ljust(20), server2['public_ipv4']),
+            '{0}{1}{2}'.format(server1['id'].ljust(36 + 5),
+                               server1['name'].ljust(20),
+                               server1['public_ipv4']),
+            '{0}{1}{2}'.format(server2['id'].ljust(36 + 5),
+                               server2['name'].ljust(20),
+                               server2['public_ipv4']),
         ], progress.getvalue().splitlines())
 
 
@@ -228,7 +235,9 @@ class RackspaceRebuildTest(unittest.TestCase):
         self.command.execute(server=server, image=image,
                              flavor=flavor, public_key_file=public_key_file)
 
-        self.api.rebuild_node.assert_any_call(server=server, image=image,
-                                              flavor=flavor, public_key_file=public_key_file,
+        self.api.rebuild_node.assert_any_call(server=server,
+                                              image=image,
+                                              flavor=flavor,
+                                              public_key_file=public_key_file,
                                               networks=None,
                                               progress=sys.stderr)

@@ -98,14 +98,14 @@ class RackspaceApiTest(unittest.TestCase):
         conn.list_nodes.return_value = [lc_node1, lc_node2]
 
         self.assertEquals([{
-                               'id': lc_node1.id,
-                               'name': lc_node1.name,
-                               'public_ipv4': lc_node1.public_ips[0]
-                           }, {
-                               'id': lc_node2.id,
-                               'name': lc_node2.name,
-                               'public_ipv4': lc_node2.public_ips[0]
-                           }], api.list_servers())
+            'id': lc_node1.id,
+            'name': lc_node1.name,
+            'public_ipv4': lc_node1.public_ips[0]
+        }, {
+            'id': lc_node2.id,
+            'name': lc_node2.name,
+            'public_ipv4': lc_node2.public_ips[0]
+        }], api.list_servers())
 
     def test_list_networks_returns_network_information(self):
         conn = mock.Mock()
@@ -250,7 +250,9 @@ class RackspaceApiTest(unittest.TestCase):
         network_id_list = ['id1', 'id2', 'id3']
         progress = StringIO()
 
-        api.rebuild_node(server='server-id', flavor='flavor-id', image='image-id',
+        api.rebuild_node(server='server-id',
+                         flavor='flavor-id',
+                         image='image-id',
                          public_key_file=StringIO("some public key"),
                          networks=network_id_list,
                          progress=progress)
