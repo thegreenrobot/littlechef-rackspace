@@ -8,8 +8,9 @@ import yaml
 
 from api import RackspaceApi
 from deploy import ChefDeployer
-from commands import (RackspaceCreate, RackspaceListImages, RackspaceListFlavors,
-                      RackspaceListNetworks, RackspaceListServers)
+from commands import (RackspaceCreate, RackspaceListImages,
+                      RackspaceListFlavors, RackspaceListNetworks,
+                      RackspaceListServers)
 
 
 def get_command_classes():

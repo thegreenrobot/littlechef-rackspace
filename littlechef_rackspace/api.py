@@ -38,9 +38,9 @@ class RackspaceApi(object):
     def list_servers(self):
         conn = self._get_conn()
 
-        return [{ "id": server.id,
-                  "name": server.name,
-                  "public_ipv4": server.public_ips[0]}
+        return [{"id": server.id,
+                 "name": server.name,
+                 "public_ipv4": server.public_ips[0]}
                 for server in conn.list_nodes()]
 
     def create_node(self, image, flavor, name, public_key_file,
@@ -92,5 +92,6 @@ class RackspaceApi(object):
                     ip_address=public_ipv4_address,
                     password=password)
 
-    def rebuild_node(self, server, image, flavor, public_key_file, networks=None, progress=None):
+    def rebuild_node(self, server, image, flavor, public_key_file,
+                     networks=None, progress=None):
         pass

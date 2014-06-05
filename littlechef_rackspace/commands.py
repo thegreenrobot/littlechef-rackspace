@@ -5,7 +5,6 @@ except ImportError:
     import json
 
 
-
 class Command(object):
 
     requires_api = False
@@ -82,7 +81,6 @@ class RackspaceListImages(Command):
                            image['name']))
 
 
-
 class RackspaceListFlavors(Command):
 
     name = "list-flavors"
@@ -94,7 +92,6 @@ class RackspaceListFlavors(Command):
         for flavor in flavors:
             progress.write('{0}{1}\n'.format(flavor['id'].ljust(20),
                            flavor['name']))
-
 
 
 class RackspaceListNetworks(Command):
@@ -111,6 +108,7 @@ class RackspaceListNetworks(Command):
             progress.write('{0}{1}{2}\n'.format(network['id'].ljust(41),
                                                 cidr.ljust(20),
                                                 network['name']))
+
 
 class RackspaceListServers(Command):
 
@@ -138,6 +136,10 @@ class RackspaceRebuild(Command):
         super(RackspaceRebuild, self).__init__(rackspace_api)
         self.chef_deploy = chef_deployer
 
-    def execute(self, server, flavor, image, public_key_file, environment=None, hostname=None, networks=None, **kwargs):
-        host = self.rackspace_api.rebuild_node(server=server, flavor=flavor, image=image, public_key_file=public_key_file,
-                                               networks=networks, progress=sys.stderr)
+    def execute(self, server, flavor, image, public_key_file, environment=None,
+                hostname=None, networks=None, **kwargs):
+        self.rackspace_api.rebuild_node(server=server, flavor=flavor,
+                                        image=image,
+                                        public_key_file=public_key_file,
+                                        networks=networks,
+                                        progress=sys.stderr)
