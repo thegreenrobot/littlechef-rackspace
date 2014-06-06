@@ -38,18 +38,18 @@ class RackspaceApi(object):
     def list_servers(self):
         conn = self._get_conn()
 
-        return [{"id": server.id,
-                 "name": server.name,
-                 "public_ipv4": server.public_ips[0]}
-                for server in conn.list_nodes()]
+        return [{"id": node.id,
+                 "name": node.name,
+                 "public_ipv4": self._public_ipv4(node)}
+                for node in conn.list_nodes()]
+
+    def _public_ipv4(self, node):
+        # Dumb hack to not select the ipv6 address
+        return [ip for ip in node.public_ips if ":" not in ip][0]
 
     def _node_to_host(self, node):
-        # Dumb hack to not select the ipv6 address
-        public_ipv4_address = [ip for ip in node.public_ips
-                               if ":" not in ip][0]
-
         return Host(name=node.name,
-                    ip_address=public_ipv4_address)
+                    ip_address=self._public_ipv4(node))
 
     def _wait_for_node_to_become_active_host(self, conn, node, progress):
         if progress:

@@ -256,8 +256,6 @@ class RackspaceRebuildTest(unittest.TestCase):
         }
         expected_args.update(kwargs)
 
-        print "zomg"
-        print self.deployer.deploy.call_args_list
         self.deployer.deploy.assert_any_call(**expected_args)
 
     def test_deploys_to_host_with_environment(self):
