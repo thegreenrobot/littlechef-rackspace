@@ -52,6 +52,9 @@ class RackspaceApi(object):
                     ip_address=public_ipv4_address)
 
     def _wait_for_node_to_become_active_host(self, conn, node, progress):
+        if progress:
+            progress.write("Waiting for node to become active")
+
         while node.state != NodeState.RUNNING:
             time.sleep(5)
 
@@ -95,7 +98,6 @@ class RackspaceApi(object):
         if progress:
             progress.write("Created node {0} (id: {1}, password: {2})\n"
                            .format(name, node.id, password))
-            progress.write("Waiting for node to become active")
 
         return self._wait_for_node_to_become_active_host(conn,
                                                          node,
@@ -109,16 +111,29 @@ class RackspaceApi(object):
         node = nodes_with_name[0]
         fake_image = NodeImage(id=image, name=None, driver=conn)
 
+        if progress:
+            progress.write("Rebuilding node {0} ({1})...".format(node.name,
+                                                                 node.id))
+            progress.write("\n")
+
         conn.ex_rebuild(node=node, image=fake_image, ex_files={
             "/root/.ssh/authorized_keys":
             public_key_file.read()
         })
 
+        # Wait for node to go into 'Rebuilding' state (takes a few seconds)
         if progress:
-            progress.write("Rebuilding node {0} ({1})...".format(node.name,
-                                                                 node.id))
+            progress.write("Waiting for node to begin rebuilding")
+
+        while node.state != NodeState.PENDING:
+            time.sleep(5)
+
+            if progress:
+                progress.write(".")
+            node = conn.ex_get_node_details(node.id)
+
+        if progress:
             progress.write("\n")
-            progress.write("Waiting for node to become active")
 
         return self._wait_for_node_to_become_active_host(conn,
                                                          node,

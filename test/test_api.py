@@ -283,7 +283,8 @@ class RackspaceApiTest(unittest.TestCase):
             self.assertEquals([
                 "Rebuilding node {0} ({1})...".format(rebuild_node.name,
                                                       rebuild_node.id),
-                "Waiting for node to become active{0}".format("." * 6),
+                'Waiting for node to begin rebuilding{0}'.format("."),
+                "Waiting for node to become active{0}".format("." * 5),
                 "Node active! (host: 50.2.3.4)"
             ], progress.getvalue().splitlines())
 
