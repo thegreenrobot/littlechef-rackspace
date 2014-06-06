@@ -232,7 +232,7 @@ class Runner(object):
         if 'use-opscode-chef' in args:
             args['use_opscode_chef'] = bool(args['use-opscode-chef'])
 
-        if 'networks' in args:
+        if user_command == 'create' and 'networks' in args:
             if '00000000-0000-0000-0000-000000000000' not in args['networks']:
                 raise InvalidConfiguration(
                     FailureMessages.MUST_SPECIFY_PUBLICNET
