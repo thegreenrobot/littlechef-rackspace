@@ -1,4 +1,4 @@
-from libcloud.compute.base import NodeImage, NodeSize, Node
+from libcloud.compute.base import NodeImage, NodeSize
 from libcloud.compute.drivers.openstack import OpenStackNetwork
 from libcloud.compute.providers import get_driver
 from libcloud.compute.types import Provider, NodeState
@@ -43,6 +43,30 @@ class RackspaceApi(object):
                  "public_ipv4": server.public_ips[0]}
                 for server in conn.list_nodes()]
 
+    def _node_to_host(self, node):
+        # Dumb hack to not select the ipv6 address
+        public_ipv4_address = [ip for ip in node.public_ips
+                               if ":" not in ip][0]
+
+        return Host(name=node.name,
+                    ip_address=public_ipv4_address)
+
+    def _wait_for_node_to_become_active_host(self, conn, node, progress):
+        while node.state != NodeState.RUNNING:
+            time.sleep(5)
+
+            if progress:
+                progress.write(".")
+            node = conn.ex_get_node_details(node.id)
+
+        host = self._node_to_host(node)
+        if progress:
+            progress.write("\n")
+            progress.write("Node active! (host: {0})\n"
+                           .format(host.ip_address))
+
+        return host
+
     def create_node(self, image, flavor, name, public_key_file,
                     networks=None, progress=None):
         create_kwargs = {}
@@ -73,30 +97,15 @@ class RackspaceApi(object):
                            .format(name, node.id, password))
             progress.write("Waiting for node to become active")
 
-        while node.state != NodeState.RUNNING:
-            time.sleep(5)
-
-            if progress:
-                progress.write(".")
-            node = conn.ex_get_node_details(node.id)
-
-        # Dumb hack to not select the ipv6 address
-        public_ipv4_address = [ip for ip in node.public_ips
-                               if ":" not in ip][0]
-
-        if progress:
-            progress.write("\n")
-            progress.write("Node active! (host: {0})\n"
-                           .format(public_ipv4_address))
-        return Host(name=name,
-                    ip_address=public_ipv4_address,
-                    password=password)
+        return self._wait_for_node_to_become_active_host(conn,
+                                                         node,
+                                                         progress=progress)
 
     def rebuild_node(self, server, image, public_key_file,
                      networks=None, progress=None):
         conn = self._get_conn()
-
         node = conn.ex_get_node_details(server)
+
         fake_image = NodeImage(id=image, name=None, driver=conn)
 
         conn.ex_rebuild(node=node, image=fake_image, ex_files={
@@ -105,16 +114,11 @@ class RackspaceApi(object):
         })
 
         if progress:
-            progress.write("Rebuilding node {0} ({1})".format(node.name,
-                                                              node.id))
+            progress.write("Rebuilding node {0} ({1})...".format(node.name,
+                                                                 node.id))
+            progress.write("\n")
             progress.write("Waiting for node to become active")
 
-        print node
-        while node.state != NodeState.RUNNING:
-            time.sleep(5)
-            print node
-
-            if progress:
-                progress.write(".")
-
-            node = conn.ex_get_node_details(node.id)
+        return self._wait_for_node_to_become_active_host(conn,
+                                                         node,
+                                                         progress=progress)

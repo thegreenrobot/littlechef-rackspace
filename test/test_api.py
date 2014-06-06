@@ -50,6 +50,7 @@ class RackspaceApiTest(unittest.TestCase):
         api._get_conn = mock.Mock(return_value=conn)
 
         self.counter = 0
+
         def ex_get_node_details(id):
             if self.counter == 5:
                 return self.active_node
@@ -199,6 +200,8 @@ class RackspaceApiTest(unittest.TestCase):
             public_ipv4_address
         ]
         self.active_node.extra['password'] = 'password'
+        self.active_node.name = "some name"
+
         conn.create_node.return_value = self.active_node
 
         result = api.create_node(name="some name",
@@ -207,8 +210,7 @@ class RackspaceApiTest(unittest.TestCase):
                                  public_key_file=StringIO("some public key"))
 
         self.assertEquals(result, Host(name="some name",
-                                       ip_address=public_ipv4_address,
-                                       password="password"))
+                                       ip_address=public_ipv4_address))
 
     def test_outputs_progress_during_creation(self):
         conn = mock.Mock()
@@ -249,9 +251,10 @@ class RackspaceApiTest(unittest.TestCase):
         public_key_io = StringIO(public_key)
         conn.ex_get_node_details.return_value = self.active_node
 
-        api.rebuild_node(server=self.pending_node.id,
-                         image="image-id",
-                         public_key_file=public_key_io)
+        with mock.patch('littlechef_rackspace.api.time'):
+            api.rebuild_node(server=self.pending_node.id,
+                             image="image-id",
+                             public_key_file=public_key_io)
 
         call_kwargs = conn.ex_rebuild.call_args_list[0][1]
 
@@ -267,16 +270,16 @@ class RackspaceApiTest(unittest.TestCase):
         progress = StringIO()
 
         with mock.patch('littlechef_rackspace.api.time'):
-            host = api.rebuild_node(server=self.pending_node.id,
-                                    image="image-id",
-                                    public_key_file=StringIO("some key"),
-                                    progress=progress)
+            api.rebuild_node(server=self.pending_node.id,
+                             image="image-id",
+                             public_key_file=StringIO("some key"),
+                             progress=progress)
 
             self.assertEquals([
                 "Rebuilding node {0} ({1})...".format(self.pending_node.name,
                                                       self.pending_node.id),
-                "Waiting for node to become active{0}".format("." * 6),
-                "Node active! (host: {0})".format(host.ip_address)
+                "Waiting for node to become active{0}".format("." * 5),
+                "Node active! (host: 50.2.3.4)"
             ], progress.getvalue().splitlines())
 
     def _get_api(self, region):
