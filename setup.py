@@ -15,7 +15,11 @@ setup(
     download_url=(
         "http://github.com/tildedave/littlechef-rackspace/archives/master"),
     keywords=["chef", "rackspace", "openstack", "devops", "operations"],
-    install_requires=file('requirements.txt').read().splitlines(),
+    install_requires=[
+        "apache-libcloud==0.14.1",
+        "littlechef==1.6.1",
+        "PyYAML==3.10",
+    ],
     packages=['littlechef_rackspace'],
     scripts=['fix-rackspace'],
     test_suite='nose.collector',
