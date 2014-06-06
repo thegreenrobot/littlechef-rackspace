@@ -21,6 +21,8 @@ pip install littlechef-rackspace
 `littlechef-rackspace` supports a number of commands for managing your Cloud Resources.
 
 * create
+* rebuild
+* list-servers
 * list-images
 * list-networks
 * list-flavors
@@ -150,7 +152,7 @@ templates:
       - 3d443c50-a45e-11e3-a5e2-0800200c9a66
 ```
 
-The following command will create a node with two networks, 
+The following command will create a node with two networks,
 `00000000-0000-0000-0000-000000000000` and `3d443c50-a45e-11e3-a5e2-0800200c9a66`.
 
 fix-rackspace create --name base-n01.preprod base preprod
@@ -161,6 +163,15 @@ fix-rackspace create --name base-n01.preprod base preprod
 The server is created with your public key file in the `/root/.ssh/authorized_keys`.
 I highly recommended that you disable root password login as part of your chef
 recipes!
+
+## Rackspace List Servers
+
+List the servers with your associated region.  Useful for determining which servers you want to rebuild.
+
+```
+4e7d282f-3827-4c71-bb1d-7519e0543c4b     server1                  5.6.7.8
+30cd9fef-4302-47fa-9f05-3fc8cc35a0b7     server2                  12.13.14.15
+```
 
 ## Rackspace List Images
 
