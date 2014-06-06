@@ -249,16 +249,18 @@ class RackspaceApiTest(unittest.TestCase):
         api = self._get_api_with_mocked_conn(conn)
         public_key = "ssh-file deadbeef dave@isis"
         public_key_io = StringIO(public_key)
-        conn.ex_get_node_details.return_value = self.active_node
+
+        rebuild_node = Node('1', 'server1', None, ['50.50.50.50'], [], None)
+        conn.list_nodes.return_value = [rebuild_node]
 
         with mock.patch('littlechef_rackspace.api.time'):
-            api.rebuild_node(server=self.pending_node.id,
+            api.rebuild_node(name='server1',
                              image="image-id",
                              public_key_file=public_key_io)
 
         call_kwargs = conn.ex_rebuild.call_args_list[0][1]
 
-        self.assertEqual(call_kwargs["node"].id, self.pending_node.id)
+        self.assertEqual(call_kwargs["node"].id, rebuild_node.id)
         self.assertEqual(call_kwargs["image"].id, "image-id")
         self.assertEquals(call_kwargs['ex_files'],
                           {"/root/.ssh/authorized_keys": public_key})
@@ -269,16 +271,19 @@ class RackspaceApiTest(unittest.TestCase):
         api = self._get_api_with_mocked_conn(conn)
         progress = StringIO()
 
+        rebuild_node = Node('1', 'server1', None, ['50.50.50.50'], [], None)
+        conn.list_nodes.return_value = [rebuild_node]
+
         with mock.patch('littlechef_rackspace.api.time'):
-            api.rebuild_node(server=self.pending_node.id,
+            api.rebuild_node(name='server1',
                              image="image-id",
                              public_key_file=StringIO("some key"),
                              progress=progress)
 
             self.assertEquals([
-                "Rebuilding node {0} ({1})...".format(self.pending_node.name,
-                                                      self.pending_node.id),
-                "Waiting for node to become active{0}".format("." * 5),
+                "Rebuilding node {0} ({1})...".format(rebuild_node.name,
+                                                      rebuild_node.id),
+                "Waiting for node to become active{0}".format("." * 6),
                 "Node active! (host: 50.2.3.4)"
             ], progress.getvalue().splitlines())
 

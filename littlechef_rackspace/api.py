@@ -101,11 +101,12 @@ class RackspaceApi(object):
                                                          node,
                                                          progress=progress)
 
-    def rebuild_node(self, server, image, public_key_file,
+    def rebuild_node(self, name, image, public_key_file,
                      networks=None, progress=None):
         conn = self._get_conn()
-        node = conn.ex_get_node_details(server)
 
+        nodes_with_name = [n for n in conn.list_nodes() if n.name == name]
+        node = nodes_with_name[0]
         fake_image = NodeImage(id=image, name=None, driver=conn)
 
         conn.ex_rebuild(node=node, image=fake_image, ex_files={
