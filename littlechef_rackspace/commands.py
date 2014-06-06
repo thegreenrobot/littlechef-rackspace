@@ -136,10 +136,13 @@ class RackspaceRebuild(Command):
         super(RackspaceRebuild, self).__init__(rackspace_api)
         self.chef_deploy = chef_deployer
 
-    def execute(self, server, flavor, image, public_key_file, environment=None,
-                hostname=None, networks=None, **kwargs):
-        self.rackspace_api.rebuild_node(server=server, flavor=flavor,
-                                        image=image,
-                                        public_key_file=public_key_file,
-                                        networks=networks,
-                                        progress=sys.stderr)
+    def execute(self, name, image, public_key_file, environment=None,
+                hostname=None, progress=sys.stderr, **kwargs):
+        host = self.rackspace_api.rebuild_node(name=name,
+                                               image=image,
+                                               public_key_file=public_key_file,
+                                               progress=progress)
+        if environment:
+            host.environment = environment
+
+        self.chef_deploy.deploy(host=host, **kwargs)

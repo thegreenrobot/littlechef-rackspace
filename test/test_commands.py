@@ -227,17 +227,46 @@ class RackspaceRebuildTest(unittest.TestCase):
         self.api.rebuild_node.return_value = Host()
 
     def test_rebuilds_server_with_api(self):
-        server = "server-with-uuid-1-2-3"
+        server_name = "awesomely named server"
         image = "imageId"
-        flavor = "flavorId"
         public_key_file = StringIO("~/.ssh/id_rsa.pub")
 
-        self.command.execute(server=server, image=image,
-                             flavor=flavor, public_key_file=public_key_file)
+        self.command.execute(name=server_name, image=image,
+                             public_key_file=public_key_file)
 
-        self.api.rebuild_node.assert_any_call(server=server,
+        self.api.rebuild_node.assert_any_call(name=server_name,
                                               image=image,
-                                              flavor=flavor,
                                               public_key_file=public_key_file,
-                                              networks=None,
                                               progress=sys.stderr)
+
+    def test_deploys_to_host_with_kwargs(self):
+        kwargs = {
+            'runlist': ['role[web]', 'recipe[test'],
+            'plugins': 'bootstrap',
+            'post_plugins': 'all_done'
+        }
+        self.command.execute(name="something",
+                             image="imageId",
+                             public_key_file=StringIO("whatever"),
+                             progress=StringIO(),
+                             **kwargs)
+
+        expected_args = {
+            'host': Host()
+        }
+        expected_args.update(kwargs)
+
+        print "zomg"
+        print self.deployer.deploy.call_args_list
+        self.deployer.deploy.assert_any_call(**expected_args)
+
+    def test_deploys_to_host_with_environment(self):
+        self.command.execute(name="something", image="imageId",
+                             public_key_file=StringIO("whatever"),
+                             progress=StringIO(),
+                             environment='staging')
+
+        expected_host = Host()
+        expected_host.environment = 'staging'
+
+        self.deployer.deploy.assert_any_call(host=expected_host)
