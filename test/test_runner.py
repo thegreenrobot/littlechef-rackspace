@@ -280,6 +280,19 @@ class RunnerTest(unittest.TestCase):
                               "(id=00000000-0000-0000-0000-000000000000)",
                               cm.exception.message)
 
+    def test_list_images_without_publicnet_does_not_raise_exception(self):
+        with mock.patch.multiple(
+                "littlechef_rackspace.runner",
+                RackspaceApi=self.api_class,
+                ChefDeployer=self.deploy_class,
+                RackspaceListImages=self.list_images_class):
+            r = Runner(options={})
+            r.main(self.dfw_list_images_args + ['--networks', 'abcdefg'])
+
+            self.api_class.assert_any_call(username="username",
+                                           key="deadbeef",
+                                           region='dfw')
+
     def test_create_with_networks_passes_networks(self):
         with mock.patch.multiple(
                 "littlechef_rackspace.runner",
