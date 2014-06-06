@@ -8,15 +8,21 @@ import yaml
 
 from api import RackspaceApi
 from deploy import ChefDeployer
-from commands import RackspaceCreate, RackspaceListImages
-from commands import RackspaceListFlavors, RackspaceListNetworks
+from commands import (RackspaceCreate,
+                      RackspaceListImages,
+                      RackspaceListFlavors,
+                      RackspaceListNetworks,
+                      RackspaceRebuild,
+                      RackspaceListServers)
 
 
 def get_command_classes():
     return [RackspaceCreate,
+            RackspaceRebuild,
             RackspaceListImages,
             RackspaceListFlavors,
-            RackspaceListNetworks]
+            RackspaceListNetworks,
+            RackspaceListServers]
 
 
 class FailureMessages:

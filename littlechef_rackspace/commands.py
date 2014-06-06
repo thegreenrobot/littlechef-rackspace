@@ -108,3 +108,41 @@ class RackspaceListNetworks(Command):
             progress.write('{0}{1}{2}\n'.format(network['id'].ljust(41),
                                                 cidr.ljust(20),
                                                 network['name']))
+
+
+class RackspaceListServers(Command):
+
+    name = "list-servers"
+    description = "List servers for a region"
+    requires_api = True
+
+    def execute(self, progress=sys.stderr, **kwargs):
+        servers = self.rackspace_api.list_servers()
+
+        for server in servers:
+            progress.write('{0}{1}{2}\n'.format(server['id'].ljust(41),
+                                                server['name'].ljust(20),
+                                                server['public_ipv4']))
+
+
+class RackspaceRebuild(Command):
+
+    name = "rebuild"
+    description = "Rebuild existing Cloud Server and bootstrap Chef"
+    requires_api = True
+    requires_deploy = True
+
+    def __init__(self, rackspace_api, chef_deployer):
+        super(RackspaceRebuild, self).__init__(rackspace_api)
+        self.chef_deploy = chef_deployer
+
+    def execute(self, name, image, public_key_file, environment=None,
+                hostname=None, progress=sys.stderr, **kwargs):
+        host = self.rackspace_api.rebuild_node(name=name,
+                                               image=image,
+                                               public_key_file=public_key_file,
+                                               progress=progress)
+        if environment:
+            host.environment = environment
+
+        self.chef_deploy.deploy(host=host, **kwargs)

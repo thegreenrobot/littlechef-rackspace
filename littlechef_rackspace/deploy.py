@@ -80,6 +80,8 @@ class ChefDeployer(object):
         # Use the ssh config we've created
         lc.env.use_ssh_config = True
         lc.env.ssh_config_path = bootstrap_config_file
+        # Rebuild needs this turned off
+        lc.env.disable_known_hosts = True
 
         # Setup ssh config
         lc.env.user = "root"
