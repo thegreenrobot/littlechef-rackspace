@@ -73,18 +73,15 @@ fix-rackspace create \
     --private-key <private_key_file> \
     --runlist "role[web],recipe[security-updates]" \
     --plugins "save_network,save_cloud" \
-    --post-plugins "mark_node_as_ready" \
-    --hostname "test.example.com"
+    --post-plugins "mark_node_as_ready"
 ```
 
 ### Arguments
 
 * `image`: Image to use (e.g. Ubuntu 12.04)
 * `flavor`: Flavor to use (e.g. 2GB, 4GB, 8GB)
-* `node-name`: Name of the newly created node in the Rackspace Cloud Control panel.  Also sets the initial
-  hostname.
-* `hostname`: Host name of the newly created node.  This only sets the name of created node JSON file.  You will
-  need to set up DNS and set the hostname on the machine yourself.
+* `name`: Name of the newly created node in the Rackspace Cloud Control panel.  Also sets the initial
+  hostname.  You will need to set up DNS yourself.
 * `public_key`: Public key used to authorize root SSH access
 * `private_key`: Private key used to authenticate as root to the newly created node
 * `environment`: Sets the `chef_environment` on a newly created node
@@ -98,7 +95,64 @@ fix-rackspace create \
 * `use-opscode-chef`: '0' or '1' based on whether to run `deploy_chef` after initial node startup (defaults to 1).
   Useful when you are installing your own chef packages through a plugin.
 
-### Templates
+## Rackspace Rebuild
+
+```
+fix-rackspace rebuild \
+    --username <username> \
+    --key <api_key> \
+    --region <region, must be DFW or ORD> \
+    --image 5cebb13a-f783-4f8c-8058-c4182c724ccd \
+    --name "test-rebuild" \
+    --public-key <public_key_file> \
+    --private-key <private_key_file> \
+    --runlist "role[web],recipe[security-updates]" \
+    --plugins "save_network,save_cloud" \
+    --post-plugins "mark_node_as_ready"
+```
+
+### Arguments
+
+Arguments are as for create, with the exception of:
+
+* `name`: Name of the node to rebuild.
+
+## Rackspace List Servers
+
+List the servers with your associated region.  Useful for determining which servers you want to rebuild.
+
+```
+4e7d282f-3827-4c71-bb1d-7519e0543c4b     server1                  5.6.7.8
+30cd9fef-4302-47fa-9f05-3fc8cc35a0b7     server2                  12.13.14.15
+```
+
+## Rackspace List Images
+
+List the images with your associated region.  Handy for finding the image you want to create.
+
+```
+$ fix-rackspace list-images
+bca91446-e60e-42e7-9e39-0582e7e20fb9       Fedora 16 (Verne)
+17282573-81b3-4a2d-80e4-7fcf16d4ac08       Windows Server 2012 (with updates) + SQL Server 2012 Web SP1
+a620e9ee-cd4c-47a0-b909-042cb5058488       Windows Server 2012 (with updates) + SQL Server 2012 Standard SP1
+3071dff8-6564-481e-a9c0-2c67f0b8cbf0       Windows Server 2012 (with updates)
+# etc
+```
+
+## Rackspace List Flavors
+
+```
+$ fix-rackspace list-flavors
+2         512MB Standard Instance
+3         1GB Standard Instance
+4         2GB Standard Instance
+5         4GB Standard Instance
+6         8GB Standard Instance
+7         15GB Standard Instance
+8         30GB Standard Instance
+```
+
+## Reducing Command-Line Boilerplate With Templates
 
 In practice many arguments are grouped together for creates.  For example, you may have a staging install in the DFW datacenter, but a production install in the ORD datacenter.  These datacenters all use different private network identifiers.  Additionally, you may have several types of node: web, application server, database, each with different plugins or runlists.
 
@@ -155,6 +209,7 @@ templates:
 The following command will create a node with two networks,
 `00000000-0000-0000-0000-000000000000` and `3d443c50-a45e-11e3-a5e2-0800200c9a66`.
 
+```
 fix-rackspace create --name base-n01.preprod base preprod
 ```
 
@@ -163,41 +218,6 @@ fix-rackspace create --name base-n01.preprod base preprod
 The server is created with your public key file in the `/root/.ssh/authorized_keys`.
 I highly recommended that you disable root password login as part of your chef
 recipes!
-
-## Rackspace List Servers
-
-List the servers with your associated region.  Useful for determining which servers you want to rebuild.
-
-```
-4e7d282f-3827-4c71-bb1d-7519e0543c4b     server1                  5.6.7.8
-30cd9fef-4302-47fa-9f05-3fc8cc35a0b7     server2                  12.13.14.15
-```
-
-## Rackspace List Images
-
-List the images with your associated region.  Handy for finding the image you want to create.
-
-```
-$ fix-rackspace list-images
-bca91446-e60e-42e7-9e39-0582e7e20fb9       Fedora 16 (Verne)
-17282573-81b3-4a2d-80e4-7fcf16d4ac08       Windows Server 2012 (with updates) + SQL Server 2012 Web SP1
-a620e9ee-cd4c-47a0-b909-042cb5058488       Windows Server 2012 (with updates) + SQL Server 2012 Standard SP1
-3071dff8-6564-481e-a9c0-2c67f0b8cbf0       Windows Server 2012 (with updates)
-# etc
-```
-
-## Rackspace List Flavors
-
-```
-$ fix-rackspace list-flavors
-2         512MB Standard Instance
-3         1GB Standard Instance
-4         2GB Standard Instance
-5         4GB Standard Instance
-6         8GB Standard Instance
-7         15GB Standard Instance
-8         30GB Standard Instance
-```
 
 ## Tips for OS X
 
