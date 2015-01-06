@@ -125,6 +125,20 @@ class RackspaceListServers(Command):
                                                 server['public_ipv4']))
 
 
+class RackspaceListVolumes(Command):
+
+    name = "list-volumes"
+    description = "List block storage volumes for a region"
+    requires_api = True
+
+    def execute(self, progress=sys.stderr, **kwargs):
+        volumes = self.rackspace_api.list_volumes()
+
+        for volume in volumes:
+            progress.write('{0}{1}\n'.format(volume['id'].ljust(41),
+                                             volume['name']))
+
+
 class RackspaceRebuild(Command):
 
     name = "rebuild"

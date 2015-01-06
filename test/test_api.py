@@ -1,6 +1,6 @@
 from StringIO import StringIO
 import unittest2 as unittest
-from libcloud.compute.base import NodeImage, Node, NodeSize
+from libcloud.compute.base import NodeImage, Node, NodeSize, StorageVolume
 from libcloud.compute.types import Provider, NodeState
 from libcloud.compute.drivers.openstack import OpenStackNetwork
 
@@ -132,6 +132,22 @@ class RackspaceApiTest(unittest.TestCase):
             'name': network1.name,
             'cidr': network1.cidr}],
             api.list_networks())
+
+    def test_list_volumes_returns_volume_information(self):
+        conn = mock.Mock()
+        api = self._get_api_with_mocked_conn(conn)
+
+        volume1 = StorageVolume('1', 'volume1', 1, None)
+        volume2 = StorageVolume('2', 'volume2', 1, None)
+
+        conn.list_volumes.return_value = [volume1, volume2]
+
+        expected_results = [
+            {'id': volume1.id, 'name': volume1.name},
+            {'id': volume2.id, 'name': volume2.name}
+        ]
+
+        self.assertEquals(expected_results, api.list_volumes())
 
     def test_creates_node(self):
         conn = mock.Mock()

@@ -13,7 +13,8 @@ from commands import (RackspaceCreate,
                       RackspaceListFlavors,
                       RackspaceListNetworks,
                       RackspaceRebuild,
-                      RackspaceListServers)
+                      RackspaceListServers,
+                      RackspaceListVolumes)
 
 
 def get_command_classes():
@@ -22,7 +23,8 @@ def get_command_classes():
             RackspaceListImages,
             RackspaceListFlavors,
             RackspaceListNetworks,
-            RackspaceListServers]
+            RackspaceListServers,
+            RackspaceListVolumes]
 
 
 class FailureMessages:

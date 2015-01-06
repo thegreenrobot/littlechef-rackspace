@@ -43,6 +43,12 @@ class RackspaceApi(object):
                  "public_ipv4": self._public_ipv4(node)}
                 for node in conn.list_nodes()]
 
+    def list_volumes(self):
+        conn = self._get_conn()
+
+        return [{"id": volume.id, "name": volume.name}
+                for volume in conn.list_volumes()]
+
     def _public_ipv4(self, node):
         # Dumb hack to not select the ipv6 address
         return [ip for ip in node.public_ips if ":" not in ip][0]
