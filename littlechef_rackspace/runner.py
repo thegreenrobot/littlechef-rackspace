@@ -44,9 +44,12 @@ class RackspaceOptionParser(OptionParser):
     def print_help(self, file=None):
         OptionParser.print_help(self, file)
         print("\nAvailable commands:\n")
+
+        name_width = max(len(c.name) for c in get_command_classes())
+
         for command_class in get_command_classes():
-            print("   {0}\t{1}".format(command_class.name,
-                                       command_class.description))
+            print("   {0}{1}".format(command_class.name.ljust(name_width + 3),
+                                     command_class.description))
         print("")
 
 
