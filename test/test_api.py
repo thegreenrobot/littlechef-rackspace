@@ -28,6 +28,17 @@ class RackspaceApiTest(unittest.TestCase):
             private_ips=[],
             state=NodeState.RUNNING,
             driver=None)
+        self.pending_volume = mock.Mock(
+            id='id',
+            name='name',
+            extra={'attachments': []},
+            driver=None)
+        self.active_volume = mock.Mock(
+            id='id',
+            name='name',
+            extra={'attachments': ['node']},
+            driver=None)
+
 
     def test_list_images_instantiates_driver_with_user_passwd_and_region(self):
         with mock.patch("littlechef_rackspace.api.get_driver") as get_driver:
@@ -191,6 +202,21 @@ class RackspaceApiTest(unittest.TestCase):
 
         self.assertEquals(network_id_list,
                           [network.id for network in networks_kwarg])
+
+    def test_creates_node_with_volumes(self):
+        conn = mock.Mock()
+        conn.ex_get_volume.return_value = self.active_volume
+
+        api = self._get_api_with_mocked_conn(conn)
+        conn.create_node.return_value = self.active_node
+
+        api.create_node(name="some name",
+                        image="some image",
+                        flavor="some flavor",
+                        volumes=['id1', 'id2', 'id3'],
+                        public_key_file=StringIO("some public key"))
+
+        self.assertEquals(self.active_volume.attach.call_count, 3)
 
     def test_waits_for_node_to_become_active(self):
         conn = mock.Mock()

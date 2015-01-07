@@ -312,6 +312,25 @@ class RunnerTest(unittest.TestCase):
             self.assertEquals([public_net_id, custom_net_id],
                               call_args.get('networks'))
 
+    def test_create_with_volumes_passes_volumes(self):
+        with mock.patch.multiple(
+                "littlechef_rackspace.runner",
+                RackspaceApi=self.api_class,
+                ChefDeployer=self.deploy_class,
+                RackspaceCreate=self.create_class):
+            r = Runner(options={})
+            volume1 = '11111111-1111-1111-1111-111111111111'
+            volume2 = '22222222-2222-2222-2222-222222222222'
+            r.main(self.create_args +
+                   ['--volumes', '{0},{1}'.format(
+                    volume1,
+                    volume2)]
+                   )
+
+            call_args = self.create_command.execute.call_args_list[0][1]
+            self.assertEquals([volume1, volume2],
+                              call_args.get('volumes'))
+
     def test_create_with_template_includes_template(self):
         with mock.patch.multiple(
                 "littlechef_rackspace.runner",

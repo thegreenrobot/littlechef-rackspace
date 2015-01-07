@@ -32,7 +32,7 @@ class RackspaceCreate(Command):
         self.chef_deploy = chef_deployer
 
     def execute(self, name, flavor, image, public_key_file,
-                environment=None, networks=None,
+                environment=None, networks=None, volumes=None,
                 progress=sys.stderr, **kwargs):
         create_args = {
             'name': name,
@@ -40,6 +40,7 @@ class RackspaceCreate(Command):
             'image': image,
             'environment': environment,
             'networks': networks,
+            'volumes': volumes,
         }
         create_args.update(kwargs)
 
@@ -52,6 +53,7 @@ class RackspaceCreate(Command):
                                               image=image,
                                               public_key_file=public_key_file,
                                               networks=networks,
+                                              volumes=volumes,
                                               progress=sys.stderr)
         if environment:
             host.environment = environment

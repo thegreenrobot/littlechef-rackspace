@@ -1,4 +1,4 @@
-from libcloud.compute.base import NodeImage, NodeSize
+from libcloud.compute.base import NodeImage, NodeSize, StorageVolume
 from libcloud.compute.drivers.openstack import OpenStackNetwork
 from libcloud.compute.providers import get_driver
 from libcloud.compute.types import Provider, NodeState
@@ -57,7 +57,8 @@ class RackspaceApi(object):
         return Host(name=node.name,
                     ip_address=self._public_ipv4(node))
 
-    def _wait_for_node_to_become_active_host(self, conn, node, progress):
+    def _wait_for_node_to_become_active_host(self, conn, node, progress,
+                                             volumes=None):
         if progress:
             progress.write("Waiting for node to become active")
 
@@ -74,10 +75,37 @@ class RackspaceApi(object):
             progress.write("Node active! (host: {0})\n"
                            .format(host.ip_address))
 
+        if volumes:
+            self._attach_volumes(conn, node, progress, volumes)
+
         return host
 
+    def _wait_for_volume_to_attach(self, conn, progress, volume):
+        if progress:
+            progress.write("Waiting for volume to attach")
+
+        while not volume.extra.get('attachments'):
+            time.sleep(3)
+
+            if progress:
+                progress.write(".")
+            volume = conn.ex_get_volume(volume.id)
+
+    def _attach_volumes(self, conn, node, progress, volumes):
+        for volume_id in volumes:
+            if progress:
+                progress.write("Attaching volume {0}\n".format(volume_id))
+
+            volume = conn.ex_get_volume(volume_id)
+            volume.attach(node)
+
+            self._wait_for_volume_to_attach(conn, progress, volume)
+
+        if progress:
+            progress.write("\nVolume attached!\n")
+
     def create_node(self, image, flavor, name, public_key_file,
-                    networks=None, progress=None):
+                    networks=None, volumes=None, progress=None):
         create_kwargs = {}
         if networks:
             fake_networks = [OpenStackNetwork(n, None, None, self)
@@ -105,9 +133,8 @@ class RackspaceApi(object):
             progress.write("Created node {0} (id: {1}, password: {2})\n"
                            .format(name, node.id, password))
 
-        return self._wait_for_node_to_become_active_host(conn,
-                                                         node,
-                                                         progress=progress)
+        return self._wait_for_node_to_become_active_host(conn, node, progress,
+                                                         volumes=volumes)
 
     def rebuild_node(self, name, image, public_key_file,
                      networks=None, progress=None):
@@ -141,6 +168,4 @@ class RackspaceApi(object):
         if progress:
             progress.write("\n")
 
-        return self._wait_for_node_to_become_active_host(conn,
-                                                         node,
-                                                         progress=progress)
+        return self._wait_for_node_to_become_active_host(conn, node, progress)

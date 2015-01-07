@@ -45,10 +45,11 @@ class RackspaceCreateTest(unittest.TestCase):
             output_arguments.replace(' ', ''),
             """Creating node with arguments:
 {
-    "environment": "production",
-    "flavor": "flavorId",
     "name": "not-important",
     "image": "imageId",
+    "environment": "production",
+    "volumes":null,
+    "flavor": "flavorId",
     "networks": null
 }
 """.replace(' ', '')
@@ -68,6 +69,7 @@ class RackspaceCreateTest(unittest.TestCase):
                                              flavor=flavor,
                                              public_key_file=public_key_file,
                                              networks=None,
+                                             volumes=None,
                                              progress=sys.stderr)
 
     def test_deploys_to_host_with_kwargs(self):

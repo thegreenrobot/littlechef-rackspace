@@ -96,6 +96,10 @@ parser.add_option("-n", "--networks", dest="networks",
                   help="Comma separated list of network ids to \
                           create node with (PublicNet is required)",
                   default=None)
+parser.add_option("-v", "--volumes", dest="volumes",
+                  help="Comma separated list of volume ids to \
+                          create node with",
+                  default=None)
 
 
 class Runner(object):
@@ -230,6 +234,7 @@ class Runner(object):
         self._expand_argument(args, 'plugins')
         self._expand_argument(args, 'post-plugins')
         self._expand_argument(args, 'networks')
+        self._expand_argument(args, 'volumes')
 
         if 'use-opscode-chef' in args:
             args['use_opscode_chef'] = bool(args['use-opscode-chef'])
