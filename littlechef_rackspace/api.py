@@ -1,4 +1,4 @@
-from libcloud.compute.base import NodeImage, NodeSize, StorageVolume
+from libcloud.compute.base import NodeImage, NodeSize
 from libcloud.compute.drivers.openstack import OpenStackNetwork
 from libcloud.compute.providers import get_driver
 from libcloud.compute.types import Provider, NodeState
