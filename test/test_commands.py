@@ -226,7 +226,7 @@ class RackspaceListVolumesTest(unittest.TestCase):
         self.api = mock.Mock(spec=RackspaceApi)
         self.command = RackspaceListVolumes(rackspace_api=self.api)
 
-    def test_outputs_servers(self):
+    def test_outputs_volumes(self):
         progress = StringIO()
         volume1 = {'id': '0', 'name': 'volume1'}
         volume2 = {'id': '1', 'name': 'volume2'}
