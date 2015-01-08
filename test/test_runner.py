@@ -1,3 +1,4 @@
+from StringIO import StringIO
 import unittest2 as unittest
 import mock
 from littlechef_rackspace.api import RackspaceApi
@@ -5,7 +6,7 @@ from littlechef_rackspace.commands import RackspaceCreate, RackspaceListImages
 from littlechef_rackspace.deploy import ChefDeployer
 from littlechef_rackspace.runner import Runner, InvalidConfiguration
 from littlechef_rackspace.runner import InvalidCommand, FailureMessages
-from littlechef_rackspace.runner import InvalidTemplate
+from littlechef_rackspace.runner import InvalidTemplate, parser
 
 
 class AbortException(Exception):
@@ -69,6 +70,27 @@ class RunnerTest(unittest.TestCase):
         r = Runner(options={})
         with self.assertRaises(InvalidCommand):
             r.main(['bogus-command'])
+
+    def test_parser_prints_help_formatted_to_longest_command_name(self):
+        klass1 = mock.Mock()
+        klass2 = mock.Mock()
+        klass1.name = "short name"
+        klass2.name = "X" * 100
+        klasses = [klass1, klass2]
+
+        class_to_patch = 'littlechef_rackspace.runner.get_command_classes'
+        with mock.patch(class_to_patch) as get_command_classes:
+            get_command_classes.return_value = klasses
+            output = StringIO()
+            parser.print_help(file=output)
+
+            expected_output = ""
+            for command_class in get_command_classes():
+                name = command_class.name.ljust(100 + 3)
+                description = command_class.description
+                expected_output += "   {0}{1}\n".format(name, description)
+
+            self.assertTrue(expected_output in output.getvalue())
 
     def test_list_images_fails_if_configuration_is_not_provided(self):
         with mock.patch.multiple(
