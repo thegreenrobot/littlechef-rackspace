@@ -1,0 +1,15 @@
+resources:
+  - name: littlechef-rackspace
+    type: git
+    source:
+      uri: https://github.com/tildedave/littlechef-rackspace.git
+      branch: concourse
+
+jobs:
+  - name: littlechef-rackspace-tests
+    plan:
+      - get: littlechef-rackspace
+      - task: littlechef-rackspace-env
+        file: littlechef-rackspace/scripts/setup-env.yml
+      - task: nosetests
+        file: littlechef-rackspace-env/scripts/nosetests.yml

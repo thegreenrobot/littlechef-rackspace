@@ -1,0 +1,9 @@
+platform: linux
+
+image: docker:///python#2.7.9
+
+inputs:
+  - name: littlechef-rackspace
+
+run:
+  path: littlechef-rackspace/scripts/setup-env
