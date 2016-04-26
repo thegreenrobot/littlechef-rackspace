@@ -1,0 +1,16 @@
+resources:
+  - name: littlechef-rackspace
+    type: git
+    source:
+      uri: https://github.com/tildedave/littlechef-rackspace.git
+      branch: concourse
+
+jobs:
+  - name: littlechef-rackspace-tests
+    plan:
+      - get: littlechef-rackspace
+      - aggregate:
+        - task: nosetests
+          file: littlechef-rackspace/scripts/nosetests.yml
+        - task: flake8
+          file: littlechef-rackspace/scripts/flake8.yml
