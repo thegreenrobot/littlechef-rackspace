@@ -3,6 +3,7 @@ from fabric.utils import abort
 
 import ConfigParser
 import os
+import sys
 import littlechef
 import yaml
 
@@ -41,13 +42,16 @@ class FailureMessages:
 
 
 class RackspaceOptionParser(OptionParser):
-    def print_help(self, file=None):
+    def print_help(self, file=sys.stderr):
         OptionParser.print_help(self, file)
-        print("\nAvailable commands:\n")
+        file.write("\nAvailable commands:\n\n")
+
+        name_width = max(len(c.name) for c in get_command_classes())
+
         for command_class in get_command_classes():
-            print("   {0}\t{1}".format(command_class.name,
-                                       command_class.description))
-        print("")
+            name = command_class.name.ljust(name_width + 3)
+            file.write("   {0}{1}\n".format(name, command_class.description))
+        file.write("\n")
 
 
 parser = RackspaceOptionParser()
