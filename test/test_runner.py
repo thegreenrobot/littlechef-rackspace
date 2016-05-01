@@ -1,7 +1,11 @@
 import unittest2 as unittest
 import mock
 from littlechef_rackspace.api import RackspaceApi
-from littlechef_rackspace.commands import RackspaceCreate, RackspaceListImages
+from littlechef_rackspace.commands import (RackspaceCreate,
+                                           RackspaceListImages,
+                                           RackspaceListNetworks,
+                                           RackspaceListVolumes,
+                                           RackspaceListFlavors)
 from littlechef_rackspace.deploy import ChefDeployer
 from littlechef_rackspace.runner import Runner, InvalidConfiguration
 from littlechef_rackspace.runner import InvalidCommand, FailureMessages
@@ -32,7 +36,14 @@ class RunnerTest(unittest.TestCase):
         self.list_images_class = mock.Mock(spec=RackspaceListImages)
         self.list_images_class.name = 'list-images'
 
-        self.list_images_command = self.list_images_class.return_value
+        self.list_volumes_class = mock.Mock(spec=RackspaceListVolumes)
+        self.list_volumes_class.name = 'list-volumes'
+
+        self.list_flavors_class = mock.Mock(spec=RackspaceListFlavors)
+        self.list_flavors_class.name = 'list-flavors'
+
+        self.list_networks_class = mock.Mock(spec=RackspaceListNetworks)
+        self.list_networks_class.name = 'list-networks'
 
         '''
         Dumb hacks using README.md as a public key because you can't
@@ -45,20 +56,25 @@ class RunnerTest(unittest.TestCase):
                             "--region dfw --public-key README.md"
                             ).format(self.create_base).split(' ')
 
-        list_images_command_string = ("list-images --username username " +
-                                      "--key deadbeef --region REGION " +
-                                      "--public-key README.md"
-                                      )
+        self.list_images_args = ("list-images --username username " +
+                                 "--key deadbeef --region dfw " +
+                                 "--public-key README.md"
+                                 ).split(' ')
 
-        self.dfw_list_images_args = list_images_command_string.replace(
-            'REGION', 'dfw'
-            ).split(' ')
-        self.lon_list_images_args = list_images_command_string.replace(
-            'REGION', 'lon'
-            ).split(' ')
-        self.syd_list_images_args = list_images_command_string.replace(
-            'REGION', 'syd'
-            ).split(' ')
+        self.list_volumes_args = ("list-volumes --username username " +
+                                  "--key deadbeef --region dfw " +
+                                  "--public-key README.md"
+                                  ).split(' ')
+
+        self.list_flavors_args = ("list-flavors --username username " +
+                                  "--key deadbeef --region dfw " +
+                                  "--public-key README.md"
+                                  ).split(' ')
+
+        self.list_networks_args = ("list-networks --username username " +
+                                   "--key deadbeef --region dfw " +
+                                   "--public-key README.md"
+                                   ).split(' ')
 
     def test_must_specify_command(self):
         r = Runner(options={})
@@ -82,14 +98,86 @@ class RunnerTest(unittest.TestCase):
                 r.main(["list-images"])
                 self.abort.assert_any_call(FailureMessages.NEED_API_KEY)
 
-    def test_list_images_with_dfw_region_instantiates_api(self):
+    def test_list_images_instantiates_api(self):
         with mock.patch.multiple(
                 "littlechef_rackspace.runner",
                 RackspaceApi=self.api_class,
                 ChefDeployer=self.deploy_class,
                 RackspaceListImages=self.list_images_class):
             r = Runner(options={})
-            r.main(self.dfw_list_images_args)
+            r.main(self.list_images_args)
+            self.api_class.assert_any_call(username="username",
+                                           key="deadbeef",
+                                           region='dfw')
+
+    def test_list_volumes_fails_if_configuration_is_not_provided(self):
+        with mock.patch.multiple(
+                "littlechef_rackspace.runner",
+                RackspaceApi=self.api_class,
+                ChefDeployer=self.deploy_class,
+                RackspaceListVolumes=self.list_volumes_class,
+                abort=self.abort):
+            with self.assertRaises(AbortException):
+                r = Runner(options={})
+                r.main(["list-volumes"])
+                self.abort.assert_any_call(FailureMessages.NEED_API_KEY)
+
+    def test_list_volumes_instantiates_api(self):
+        with mock.patch.multiple(
+                "littlechef_rackspace.runner",
+                RackspaceApi=self.api_class,
+                ChefDeployer=self.deploy_class,
+                RackspaceListVolumes=self.list_volumes_class):
+            r = Runner(options={})
+            r.main(self.list_volumes_args)
+            self.api_class.assert_any_call(username="username",
+                                           key="deadbeef",
+                                           region='dfw')
+
+    def test_list_flavors_fails_if_configuration_is_not_provided(self):
+        with mock.patch.multiple(
+                "littlechef_rackspace.runner",
+                RackspaceApi=self.api_class,
+                ChefDeployer=self.deploy_class,
+                RackspaceListFlavors=self.list_flavors_class,
+                abort=self.abort):
+            with self.assertRaises(AbortException):
+                r = Runner(options={})
+                r.main(["list-flavors"])
+                self.abort.assert_any_call(FailureMessages.NEED_API_KEY)
+
+    def test_list_flavors_instantiates_api(self):
+        with mock.patch.multiple(
+                "littlechef_rackspace.runner",
+                RackspaceApi=self.api_class,
+                ChefDeployer=self.deploy_class,
+                RackspaceListFlavors=self.list_flavors_class):
+            r = Runner(options={})
+            r.main(self.list_flavors_args)
+            self.api_class.assert_any_call(username="username",
+                                           key="deadbeef",
+                                           region='dfw')
+
+    def test_list_networks_fails_if_configuration_is_not_provided(self):
+        with mock.patch.multiple(
+                "littlechef_rackspace.runner",
+                RackspaceApi=self.api_class,
+                ChefDeployer=self.deploy_class,
+                RackspaceListNetworks=self.list_networks_class,
+                abort=self.abort):
+            with self.assertRaises(AbortException):
+                r = Runner(options={})
+                r.main(["list-networks"])
+                self.abort.assert_any_call(FailureMessages.NEED_API_KEY)
+
+    def test_list_networks_instantiates_api(self):
+        with mock.patch.multiple(
+                "littlechef_rackspace.runner",
+                RackspaceApi=self.api_class,
+                ChefDeployer=self.deploy_class,
+                RackspaceListNetworks=self.list_networks_class):
+            r = Runner(options={})
+            r.main(self.list_networks_args)
             self.api_class.assert_any_call(username="username",
                                            key="deadbeef",
                                            region='dfw')
@@ -287,7 +375,46 @@ class RunnerTest(unittest.TestCase):
                 ChefDeployer=self.deploy_class,
                 RackspaceListImages=self.list_images_class):
             r = Runner(options={})
-            r.main(self.dfw_list_images_args + ['--networks', 'abcdefg'])
+            r.main(self.list_images_args + ['--networks', 'abcdefg'])
+
+            self.api_class.assert_any_call(username="username",
+                                           key="deadbeef",
+                                           region='dfw')
+
+    def test_list_volumes_without_publicnet_does_not_raise_exception(self):
+        with mock.patch.multiple(
+                "littlechef_rackspace.runner",
+                RackspaceApi=self.api_class,
+                ChefDeployer=self.deploy_class,
+                RackspaceListVolumes=self.list_volumes_class):
+            r = Runner(options={})
+            r.main(self.list_volumes_args + ['--networks', 'abcdefg'])
+
+            self.api_class.assert_any_call(username="username",
+                                           key="deadbeef",
+                                           region='dfw')
+
+    def test_list_flavors_without_publicnet_does_not_raise_exception(self):
+        with mock.patch.multiple(
+                "littlechef_rackspace.runner",
+                RackspaceApi=self.api_class,
+                ChefDeployer=self.deploy_class,
+                RackspaceListFlavors=self.list_flavors_class):
+            r = Runner(options={})
+            r.main(self.list_flavors_args + ['--networks', 'abcdefg'])
+
+            self.api_class.assert_any_call(username="username",
+                                           key="deadbeef",
+                                           region='dfw')
+
+    def test_list_networks_without_publicnet_does_not_raise_exception(self):
+        with mock.patch.multiple(
+                "littlechef_rackspace.runner",
+                RackspaceApi=self.api_class,
+                ChefDeployer=self.deploy_class,
+                RackspaceListNetworks=self.list_networks_class):
+            r = Runner(options={})
+            r.main(self.list_networks_args + ['--networks', 'abcdefg'])
 
             self.api_class.assert_any_call(username="username",
                                            key="deadbeef",
@@ -311,6 +438,25 @@ class RunnerTest(unittest.TestCase):
             call_args = self.create_command.execute.call_args_list[0][1]
             self.assertEquals([public_net_id, custom_net_id],
                               call_args.get('networks'))
+
+    def test_create_with_volumes_passes_volumes(self):
+        with mock.patch.multiple(
+                "littlechef_rackspace.runner",
+                RackspaceApi=self.api_class,
+                ChefDeployer=self.deploy_class,
+                RackspaceCreate=self.create_class):
+            r = Runner(options={})
+            volume1 = '11111111-1111-1111-1111-111111111111'
+            volume2 = '22222222-2222-2222-2222-222222222222'
+            r.main(self.create_args +
+                   ['--volumes', '{0},{1}'.format(
+                    volume1,
+                    volume2)]
+                   )
+
+            call_args = self.create_command.execute.call_args_list[0][1]
+            self.assertEquals([volume1, volume2],
+                              call_args.get('volumes'))
 
     def test_create_with_template_includes_template(self):
         with mock.patch.multiple(

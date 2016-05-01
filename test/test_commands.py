@@ -8,6 +8,7 @@ from littlechef_rackspace.commands import (RackspaceCreate,
                                            RackspaceListFlavors,
                                            RackspaceListNetworks,
                                            RackspaceListServers,
+                                           RackspaceListVolumes,
                                            RackspaceRebuild)
 from littlechef_rackspace.deploy import ChefDeployer
 from littlechef_rackspace.lib import Host
@@ -44,10 +45,11 @@ class RackspaceCreateTest(unittest.TestCase):
             output_arguments.replace(' ', ''),
             """Creating node with arguments:
 {
-    "environment": "production",
-    "flavor": "flavorId",
     "name": "not-important",
     "image": "imageId",
+    "environment": "production",
+    "volumes":null,
+    "flavor": "flavorId",
     "networks": null
 }
 """.replace(' ', '')
@@ -67,6 +69,7 @@ class RackspaceCreateTest(unittest.TestCase):
                                              flavor=flavor,
                                              public_key_file=public_key_file,
                                              networks=None,
+                                             volumes=None,
                                              progress=sys.stderr)
 
     def test_deploys_to_host_with_kwargs(self):
@@ -214,6 +217,28 @@ class RackspaceListServersTest(unittest.TestCase):
             '{0}{1}{2}'.format(server2['id'].ljust(36 + 5),
                                server2['name'].ljust(20),
                                server2['public_ipv4']),
+        ], progress.getvalue().splitlines())
+
+
+class RackspaceListVolumesTest(unittest.TestCase):
+
+    def setUp(self):
+        self.api = mock.Mock(spec=RackspaceApi)
+        self.command = RackspaceListVolumes(rackspace_api=self.api)
+
+    def test_outputs_volumes(self):
+        progress = StringIO()
+        volume1 = {'id': '0', 'name': 'volume1'}
+        volume2 = {'id': '1', 'name': 'volume2'}
+        self.api.list_volumes.return_value = [volume1, volume2]
+
+        self.command.execute(progress=progress)
+
+        self.assertEquals([
+            '{0}{1}'.format(volume1['id'].ljust(36 + 5),
+                               volume1['name']),
+            '{0}{1}'.format(volume2['id'].ljust(36 + 5),
+                               volume2['name']),
         ], progress.getvalue().splitlines())
 
 

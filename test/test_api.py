@@ -1,6 +1,6 @@
 from StringIO import StringIO
 import unittest2 as unittest
-from libcloud.compute.base import NodeImage, Node, NodeSize
+from libcloud.compute.base import NodeImage, Node, NodeSize, StorageVolume
 from libcloud.compute.types import Provider, NodeState
 from libcloud.compute.drivers.openstack import OpenStackNetwork
 
@@ -28,6 +28,17 @@ class RackspaceApiTest(unittest.TestCase):
             private_ips=[],
             state=NodeState.RUNNING,
             driver=None)
+        self.pending_volume = mock.Mock(
+            id='id',
+            name='name',
+            extra={'attachments': []},
+            driver=None)
+        self.active_volume = mock.Mock(
+            id='id',
+            name='name',
+            extra={'attachments': ['node']},
+            driver=None)
+
 
     def test_list_images_instantiates_driver_with_user_passwd_and_region(self):
         with mock.patch("littlechef_rackspace.api.get_driver") as get_driver:
@@ -133,6 +144,22 @@ class RackspaceApiTest(unittest.TestCase):
             'cidr': network1.cidr}],
             api.list_networks())
 
+    def test_list_volumes_returns_volume_information(self):
+        conn = mock.Mock()
+        api = self._get_api_with_mocked_conn(conn)
+
+        volume1 = StorageVolume('1', 'volume1', 1, None)
+        volume2 = StorageVolume('2', 'volume2', 1, None)
+
+        conn.list_volumes.return_value = [volume1, volume2]
+
+        expected_results = [
+            {'id': volume1.id, 'name': volume1.name},
+            {'id': volume2.id, 'name': volume2.name}
+        ]
+
+        self.assertEquals(expected_results, api.list_volumes())
+
     def test_creates_node(self):
         conn = mock.Mock()
         api = self._get_api_with_mocked_conn(conn)
@@ -175,6 +202,21 @@ class RackspaceApiTest(unittest.TestCase):
 
         self.assertEquals(network_id_list,
                           [network.id for network in networks_kwarg])
+
+    def test_creates_node_with_volumes(self):
+        conn = mock.Mock()
+        conn.ex_get_volume.return_value = self.active_volume
+
+        api = self._get_api_with_mocked_conn(conn)
+        conn.create_node.return_value = self.active_node
+
+        api.create_node(name="some name",
+                        image="some image",
+                        flavor="some flavor",
+                        volumes=['id1', 'id2', 'id3'],
+                        public_key_file=StringIO("some public key"))
+
+        self.assertEquals(self.active_volume.attach.call_count, 3)
 
     def test_waits_for_node_to_become_active(self):
         conn = mock.Mock()

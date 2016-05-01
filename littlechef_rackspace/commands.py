@@ -32,7 +32,7 @@ class RackspaceCreate(Command):
         self.chef_deploy = chef_deployer
 
     def execute(self, name, flavor, image, public_key_file,
-                environment=None, networks=None,
+                environment=None, networks=None, volumes=None,
                 progress=sys.stderr, **kwargs):
         create_args = {
             'name': name,
@@ -40,6 +40,7 @@ class RackspaceCreate(Command):
             'image': image,
             'environment': environment,
             'networks': networks,
+            'volumes': volumes,
         }
         create_args.update(kwargs)
 
@@ -52,6 +53,7 @@ class RackspaceCreate(Command):
                                               image=image,
                                               public_key_file=public_key_file,
                                               networks=networks,
+                                              volumes=volumes,
                                               progress=sys.stderr)
         if environment:
             host.environment = environment
@@ -123,6 +125,20 @@ class RackspaceListServers(Command):
             progress.write('{0}{1}{2}\n'.format(server['id'].ljust(41),
                                                 server['name'].ljust(20),
                                                 server['public_ipv4']))
+
+
+class RackspaceListVolumes(Command):
+
+    name = "list-volumes"
+    description = "List block storage volumes for a region"
+    requires_api = True
+
+    def execute(self, progress=sys.stderr, **kwargs):
+        volumes = self.rackspace_api.list_volumes()
+
+        for volume in volumes:
+            progress.write('{0}{1}\n'.format(volume['id'].ljust(41),
+                                             volume['name']))
 
 
 class RackspaceRebuild(Command):
