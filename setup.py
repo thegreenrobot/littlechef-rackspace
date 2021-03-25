@@ -18,7 +18,7 @@ setup(
     install_requires=[
         "apache-libcloud==0.14.1",
         "littlechef==1.6.1",
-        "PyYAML==3.10",
+        "PyYAML==5.4",
     ],
     packages=['littlechef_rackspace'],
     scripts=['fix-rackspace'],
